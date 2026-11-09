@@ -19,5 +19,5 @@ results/
 *.onnx
 *.pkl
 third_party/
-opensim/Geometry/
+opensim_models/Geometry/
 yolo*.pt

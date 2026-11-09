@@ -133,6 +133,8 @@ def cmd_check(a):
                 "ultralytics", "smplx"]:
         try:
             m = importlib.import_module(mod)
+            if mod == "opensim" and not hasattr(m, "Model"):
+                raise ImportError("not the OpenSim bindings")
             extra = ""
             if mod == "torch":
                 extra = f"  cuda={m.cuda.is_available()} mps={getattr(m.backends, 'mps', None) is not None and m.backends.mps.is_available()}"

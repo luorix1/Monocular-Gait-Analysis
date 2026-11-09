@@ -15,13 +15,13 @@ def calibrated(session):
     return cam, rep
 
 
-def has(mod):
+def has(mod, attr=None):
     try:
-        __import__(mod)
-        return True
+        m = __import__(mod)
+        return attr is None or hasattr(m, attr)
     except Exception:
         return False
 
 
 requires_torch = pytest.mark.skipif(not has("torch"), reason="PyTorch not installed")
-requires_opensim = pytest.mark.skipif(not has("opensim"), reason="OpenSim not installed (conda)")
+requires_opensim = pytest.mark.skipif(not has("opensim", "Model"), reason="OpenSim not installed (conda)")

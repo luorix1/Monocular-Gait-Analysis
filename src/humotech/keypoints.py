@@ -2,7 +2,7 @@
 
 The canonical keypoint set for the whole pipeline is **Halpe-26** (body + feet),
 which is what RTMPose "BodyWithFeet" outputs and what the vendored OpenSim
-marker set (``opensim/Markers_Halpe26.xml``, from Pose2Sim) expects.
+marker set (``opensim_models/Markers_Halpe26.xml``, from Pose2Sim) expects.
 Its first 17 entries are identical to COCO-17, so COCO-only detectors (YOLO-pose)
 map in directly; the feet are then simply missing (confidence 0).
 """

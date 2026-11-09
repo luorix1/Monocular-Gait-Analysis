@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Single-camera treadmill gait analysis: 2D/3D pose -> OpenSim-constrained kinematics -> gait events & spatiotemporal parameters"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Proprietary (MetaMobility) - vendored Pose2Sim OpenSim files are BSD-3, see opensim/LICENSE_Pose2Sim" }
+license = { text = "Proprietary (MetaMobility) - vendored Pose2Sim OpenSim files are BSD-3, see opensim_models/LICENSE_Pose2Sim" }
 dependencies = [
     "numpy>=1.24",
     "scipy>=1.10",

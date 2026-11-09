@@ -1,6 +1,6 @@
 """OpenSim stage: Halpe-26 markers -> scaled musculoskeletal model -> inverse kinematics.
 
-Uses the Pose2Sim full-body model + Halpe-26 marker set (vendored in ``opensim/``,
+Uses the Pose2Sim full-body model + Halpe-26 marker set (vendored in ``opensim_models/``,
 BSD-3, Pagnon et al.). IK through the model is what turns free-floating keypoints into
 anatomically consistent joint angles (fixed segment lengths, physiological joint axes
 and ranges). The treadmill frame == OpenSim ground frame (X forward, Y up, Z right).
@@ -21,7 +21,7 @@ import pandas as pd
 from ..io.data import Keypoints3D, read_mot, write_trc
 from ..keypoints import IDX, OPENSIM_MARKERS
 
-OPENSIM_DIR = Path(os.environ.get("HUMOTECH_OPENSIM_DIR", Path(__file__).resolve().parents[3] / "opensim"))
+OPENSIM_DIR = Path(os.environ.get("HUMOTECH_OPENSIM_DIR", Path(__file__).resolve().parents[3] / "opensim_models"))
 MODEL = "Model_Pose2Sim_simple.osim"
 MARKERS = "Markers_Halpe26.xml"
 IK_SETUP = "IK_Setup_Pose2Sim_Halpe26.xml"

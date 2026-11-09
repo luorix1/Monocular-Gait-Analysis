@@ -69,7 +69,7 @@ src/humotech/
   gait/         events (Zeni, velocity), belt speed, spatiotemporal parameters
   synth/        synthetic treadmill walker with exact ground truth (tests, demos)
   pipeline.py   end-to-end orchestration with cached intermediates;  cli.py  `humotech …`
-opensim/        Pose2Sim model + Halpe-26 marker set + IK setup (BSD-3, see LICENSE_Pose2Sim)
+opensim_models/ Pose2Sim model + Halpe-26 marker set + IK setup (BSD-3, see LICENSE_Pose2Sim)
 configs/        default.yaml — all pipeline options
 docs/           calibration.md, method.md, ubuntu_handoff.md
 tests/          pytest suite (synthetic ground truth; torch/OpenSim tests auto-skip if missing)

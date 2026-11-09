@@ -10,9 +10,9 @@ whl = glob.glob(os.path.join(sys.argv[1], "*.whl"))[0]
 z = zipfile.ZipFile(whl)
 for n in z.namelist():
     if n.startswith("Pose2Sim/OpenSim_Setup/Geometry/") and not n.endswith("/"):
-        out = os.path.join("opensim", "Geometry", os.path.basename(n))
+        out = os.path.join("opensim_models", "Geometry", os.path.basename(n))
         os.makedirs(os.path.dirname(out), exist_ok=True)
         open(out, "wb").write(z.read(n))
-print("opensim/Geometry populated")
+print("opensim_models/Geometry populated")
 PY
 rm -rf "$tmp"
