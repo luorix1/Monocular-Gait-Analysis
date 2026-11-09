@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+.venv/
+# data / results / large binaries
+data/*
+!data/README.md
+outputs/
+results/
+*.mp4
+*.mov
+*.avi
+*.npz
+*.pt
+*.pth
+*.onnx
+*.pkl
+third_party/
+opensim/Geometry/
+yolo*.pt

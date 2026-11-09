@@ -1,0 +1,19 @@
+# Base environment for HumoTech — same file on macOS (arm64) and Ubuntu (x86_64).
+#   conda env create -f environment.yml        (miniforge / mamba / micromamba all work)
+# then run scripts/setup_mac.sh or scripts/setup_ubuntu.sh (installs PyTorch + this package).
+# OpenSim python bindings only exist on conda (opensim-org channel): 4.6 for py3.11 on osx-arm64 & linux-64.
+name: humotech
+channels:
+  - opensim-org
+  - conda-forge
+dependencies:
+  - python=3.11
+  - opensim-org::opensim>=4.5
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - pyyaml
+  - tqdm
+  - pytest
+  - pip

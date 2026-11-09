@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "humotech"
+version = "0.1.0"
+description = "Single-camera treadmill gait analysis: 2D/3D pose -> OpenSim-constrained kinematics -> gait events & spatiotemporal parameters"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary (MetaMobility) - vendored Pose2Sim OpenSim files are BSD-3, see opensim/LICENSE_Pose2Sim" }
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "pandas>=2.0",
+    "opencv-python>=4.8",
+    "matplotlib>=3.7",
+    "pyyaml>=6",
+    "tqdm",
+]
+
+[project.optional-dependencies]
+# 2D pose (CPU on Mac; on Ubuntu swap onnxruntime -> onnxruntime-gpu)
+pose = ["rtmlib>=0.0.13", "onnxruntime>=1.17"]
+yolo = ["ultralytics>=8.3"]
+# treadmill-constrained 3D refinement (CPU works; CUDA on Ubuntu)
+refine = ["torch>=2.2"]
+# SMPL-based lifters (GVHMR / WHAM) on Ubuntu + NVIDIA
+gpu3d = ["torch>=2.2", "smplx>=0.1.28"]
+dev = ["pytest>=7", "ruff"]
+# NOTE: OpenSim (python bindings) is installed with conda:  conda install -c opensim-org opensim
+
+[project.scripts]
+humotech = "humotech.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "opensim: needs the OpenSim python bindings (conda)",
+    "torch: needs PyTorch",
+    "slow: slower integration tests",
+]
+
+[tool.ruff]
+line-length = 110
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = ["E501", "E731", "E402", "E741"]

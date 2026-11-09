@@ -1,0 +1,46 @@
+# HumoTech pipeline configuration. Copy per session and edit.
+subject:
+  height_m: 1.75
+  mass_kg: 70.0
+
+treadmill:            # belt surface dimensions used for calibration (measure with a tape)
+  belt_length_m: 1.60 # visible/marked belt length front-to-back
+  belt_width_m: 0.50
+
+pose2d:
+  backend: rtmlib     # rtmlib (Halpe-26, has heels/toes) | yolo (COCO-17, no feet)
+  mode: balanced      # rtmlib: lightweight | balanced | performance
+  device: cpu         # cpu | cuda | mps (yolo)
+  yolo_weights: yolo11m-pose.pt
+
+clean:
+  conf_thr: 0.3
+  max_gap_s: 0.15
+  cutoff_hz: 8.0
+  fix_lr_swaps: true
+
+lift:
+  backend: planar     # planar (CPU) | gvhmr | wham   (gvhmr/wham: run on Ubuntu GPU first)
+  result_path: null   # hmr4d_results.pt (GVHMR) or wham_output.pkl (WHAM)
+  smpl_model_dir: null
+
+refine:
+  enabled: true
+  iters: 600
+  rounds: 2
+  device: cpu         # cuda on Ubuntu
+  sigma_px: 4.0
+
+opensim:
+  enabled: true
+
+events:
+  method: zeni        # zeni | velocity
+  source: opensim     # opensim (model markers after IK) | refined (3D keypoints) | 2d
+  velocity_frac: 0.5  # for method=velocity
+  hs_offset_ms: 0.0   # constant corrections, e.g. learned against force-plate events
+  to_offset_ms: 0.0
+
+belt_speed:
+  source: refined     # refined (from the optimisation) | 2d | 3d | known
+  known_m_s: null     # set if the treadmill speed is known, to bypass estimation
