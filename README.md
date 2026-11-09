@@ -89,5 +89,9 @@ tests/          pytest suite (synthetic ground truth; torch/OpenSim tests auto-s
 | Events, belt speed, spatiotemporal | implemented, tested |
 | GUI | not started — planned on Ubuntu (see docs/ubuntu_handoff.md) |
 
+Verified during setup: full suite (22 tests) with OpenSim 4.6 + PyTorch 2.x CPU on Linux x86_64
+(same conda env as `environment.yml`); core tests (no torch/OpenSim) in a Linux VM on the Mac.
+`scripts/setup_mac.sh` itself (native macOS conda) has not been run yet — do that first.
+
 Run the tests with `pytest` (≈30 s). The synthetic walker is kinematically simple, so tests
 check the *pipeline* (geometry, bookkeeping, optimisation), not real-world accuracy.
