@@ -10,7 +10,7 @@ treadmill:            # belt surface dimensions used for calibration (measure wi
 pose2d:
   backend: rtmlib     # rtmlib (Halpe-26, has heels/toes) | yolo (COCO-17, no feet)
   mode: balanced      # rtmlib: lightweight | balanced | performance
-  device: cpu         # cpu | cuda | mps (yolo)
+  device: cuda         # cpu | cuda | mps (yolo)
   yolo_weights: yolo11m-pose.pt
 
 clean:
