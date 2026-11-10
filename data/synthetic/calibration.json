@@ -1,0 +1,145 @@
+{
+  "camera": {
+    "K": [
+      [
+        1311.0837231907692,
+        0.0,
+        959.5
+      ],
+      [
+        0.0,
+        1311.0837231907692,
+        539.5
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "dist": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "R": [
+      [
+        0.9944707239929573,
+        -0.00016595035079530144,
+        -0.10501405420896516
+      ],
+      [
+        0.0074592127531409105,
+        -0.9973612703067236,
+        0.07221396428158454
+      ],
+      [
+        -0.10474893443861748,
+        -0.0725979955139235,
+        -0.9918453467054904
+      ]
+    ],
+    "t": [
+      0.0007294804519436167,
+      0.7982723479790019,
+      2.9043592414542756
+    ],
+    "image_size": [
+      1920,
+      1080
+    ],
+    "meta": {
+      "report": {
+        "reprojection_error_px": {
+          "belt_front_left": 0.08601790791763263,
+          "belt_front_right": 0.07248659470215567,
+          "belt_back_right": 0.07861742415775531,
+          "belt_back_left": 0.09252656628236655
+        },
+        "rms_px": 0.08275755515849668,
+        "focal_px": 1311.0837231907692,
+        "focal_estimated": true,
+        "camera_center_m": [
+          0.29754860553757895,
+          1.0070167032705248,
+          2.8231053936733037
+        ],
+        "camera_height_m": 1.0070167032705248,
+        "n_landmarks": 4,
+        "warning": "Focal length estimated from only 4 coplanar points: ok for a rough calibration, but add an off-plane landmark (e.g. handrail height) or a checkerboard intrinsics file for best accuracy."
+      }
+    }
+  },
+  "landmarks": [
+    {
+      "name": "belt_front_left",
+      "world": [
+        0.8,
+        0.0,
+        -0.25
+      ],
+      "pixel": [
+        1310.9520257845218,
+        875.3269181945639
+      ]
+    },
+    {
+      "name": "belt_front_right",
+      "world": [
+        0.8,
+        0.0,
+        0.25
+      ],
+      "pixel": [
+        1351.9472035041438,
+        958.6410056138219
+      ]
+    },
+    {
+      "name": "belt_back_right",
+      "world": [
+        -0.8,
+        0.0,
+        0.25
+      ],
+      "pixel": [
+        566.6478116207751,
+        927.1494845899801
+      ]
+    },
+    {
+      "name": "belt_back_left",
+      "world": [
+        -0.8,
+        0.0,
+        -0.25
+      ],
+      "pixel": [
+        648.0939139533724,
+        853.2716125637464
+      ]
+    }
+  ],
+  "report": {
+    "reprojection_error_px": {
+      "belt_front_left": 0.08601790791763263,
+      "belt_front_right": 0.07248659470215567,
+      "belt_back_right": 0.07861742415775531,
+      "belt_back_left": 0.09252656628236655
+    },
+    "rms_px": 0.08275755515849668,
+    "focal_px": 1311.0837231907692,
+    "focal_estimated": true,
+    "camera_center_m": [
+      0.29754860553757895,
+      1.0070167032705248,
+      2.8231053936733037
+    ],
+    "camera_height_m": 1.0070167032705248,
+    "n_landmarks": 4,
+    "warning": "Focal length estimated from only 4 coplanar points: ok for a rough calibration, but add an off-plane landmark (e.g. handrail height) or a checkerboard intrinsics file for best accuracy."
+  },
+  "world_frame": "origin=belt centre; +X forward (subject faces); +Y up; +Z subject's right"
+}

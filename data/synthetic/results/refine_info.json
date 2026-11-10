@@ -1,0 +1,34 @@
+{
+  "belt_speed": 1.2018026113510132,
+  "bone_lengths": {
+    "LHip-RHip": 0.18063247203826904,
+    "LShoulder-RShoulder": 0.3667507469654083,
+    "LShoulder-LHip": 0.5300877690315247,
+    "RShoulder-RHip": 0.5300877690315247,
+    "LHip-LKnee": 0.4262789189815521,
+    "LKnee-LAnkle": 0.42805975675582886,
+    "RHip-RKnee": 0.4262789189815521,
+    "RKnee-RAnkle": 0.42805975675582886,
+    "LAnkle-LHeel": 0.06884299963712692,
+    "LAnkle-LBigToe": 0.15025945007801056,
+    "LAnkle-LSmallToe": 0.13340340554714203,
+    "LHeel-LBigToe": 0.1905478686094284,
+    "RAnkle-RHeel": 0.06884299963712692,
+    "RAnkle-RBigToe": 0.15025945007801056,
+    "RAnkle-RSmallToe": 0.13340340554714203,
+    "RHeel-RBigToe": 0.1905478686094284,
+    "LShoulder-LElbow": 0.32529309391975403,
+    "LElbow-LWrist": 0.25759977102279663,
+    "RShoulder-RElbow": 0.32529309391975403,
+    "RElbow-RWrist": 0.25759977102279663,
+    "Neck-Head": 0.3471693694591522,
+    "Neck-Nose": 0.18916577100753784
+  },
+  "sole_heights": {
+    "heel": 0.030010970309376717,
+    "toe": 0.020008519291877747,
+    "toe2": 0.019983401522040367
+  },
+  "reproj_rmse_px": 1.2335960090058304,
+  "history": []
+}

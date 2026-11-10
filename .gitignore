@@ -5,11 +5,6 @@ __pycache__/
 .ruff_cache/
 .DS_Store
 .venv/
-# data / results / large binaries
-data/*
-!data/README.md
-outputs/
-results/
 *.mp4
 *.mov
 *.avi
