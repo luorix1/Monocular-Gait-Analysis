@@ -39,19 +39,8 @@ def cmd_calibrate(a):
 
 def _preview_calibration(frame, cam, L, W, path):
     import cv2
-    img = frame.copy()
-    # belt outline + 0.1 m grid + 1 m vertical posts at the corners
-    for x in np.arange(-L / 2, L / 2 + 1e-6, 0.1):
-        p = cam.project(np.array([[x, 0, -W / 2], [x, 0, W / 2]])).astype(int)
-        cv2.line(img, tuple(p[0]), tuple(p[1]), (0, 200, 255), 1)
-    for sx in (-1, 1):
-        for sz in (-1, 1):
-            p = cam.project(np.array([[sx * L / 2, 0, sz * W / 2], [sx * L / 2, 1.0, sz * W / 2]])).astype(int)
-            cv2.line(img, tuple(p[0]), tuple(p[1]), (0, 255, 0), 2)
-    o = cam.project(np.array([[0, 0, 0], [0.3, 0, 0], [0, 0.3, 0], [0, 0, 0.3]])).astype(int)
-    for k, c in zip(range(1, 4), [(0, 0, 255), (0, 255, 0), (255, 0, 0)]):
-        cv2.arrowedLine(img, tuple(o[0]), tuple(o[k]), c, 2)
-    cv2.imwrite(str(path), img)
+    from .calibration.preview import draw_calibration_preview
+    cv2.imwrite(str(path), draw_calibration_preview(frame, cam, L, W))
     print(f"preview -> {path}  (grid should lie on the belt; green posts are 1 m tall; X red, Y green, Z blue)")
 
 
@@ -145,6 +134,23 @@ def cmd_check(a):
             print(f"  [missing] {mod:12s} ({type(e).__name__})")
 
 
+def cmd_app(a):
+    try:
+        import uvicorn
+        from .app.server import create_app
+    except ImportError as e:
+        sys.exit(f"The web app needs extra packages: pip install -e \".[app]\"   ({e})")
+    data = Path(a.data).resolve()
+    data.mkdir(parents=True, exist_ok=True)
+    url = f"http://{'localhost' if a.host in ('127.0.0.1', '0.0.0.0') else a.host}:{a.port}"
+    print(f"HumoTech app: data folder {data}\n  open {url}   (Ctrl+C to stop)")
+    if a.browser:
+        import threading
+        import webbrowser
+        threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+    uvicorn.run(create_app(data), host=a.host, port=a.port, log_level="warning")
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="humotech", description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -200,6 +206,14 @@ def main(argv=None):
 
     c = sub.add_parser("check", help="report which optional dependencies are available")
     c.set_defaults(func=cmd_check)
+
+    c = sub.add_parser("app", help="start the web app (browser UI for the whole workflow)")
+    c.add_argument("--data", default="data", help="data folder with subjects, intrinsics and results")
+    c.add_argument("--host", default="127.0.0.1",
+                   help="interface to listen on; 0.0.0.0 makes it reachable from other machines on the network")
+    c.add_argument("--port", type=int, default=8000)
+    c.add_argument("--no-browser", dest="browser", action="store_false", help="don't open a browser tab")
+    c.set_defaults(func=cmd_app)
 
     a = p.parse_args(argv)
     if a.cmd == "run" and not (a.video or a.kp2d):

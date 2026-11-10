@@ -16,3 +16,8 @@ __pycache__/
 third_party/
 opensim_models/Geometry/
 yolo*.pt
+# web app job logs + partial uploads
+.jobs/
+*.part
+data/S*
+.sync.bundle

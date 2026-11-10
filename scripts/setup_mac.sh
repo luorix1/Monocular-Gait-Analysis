@@ -11,7 +11,7 @@ fi
 # PyTorch from PyPI has native arm64 wheels (CPU + MPS); used by the 3D refinement.
 conda run -n humotech python -m pip install torch
 # this package + 2D pose (rtmlib/ONNX Runtime CPU) + dev tools; YOLO is optional
-conda run -n humotech python -m pip install -e ".[pose,refine,dev]"
+conda run -n humotech python -m pip install -e ".[pose,refine,app,dev]"
 conda run -n humotech python -m pip install ultralytics || echo "(ultralytics optional - skipped)"
 conda run -n humotech humotech check
 conda run -n humotech python -m pytest

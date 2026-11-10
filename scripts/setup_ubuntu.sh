@@ -11,7 +11,7 @@ else
   conda env create -f environment.yml
 fi
 conda run -n humotech python -m pip install torch --index-url "https://download.pytorch.org/whl/${CUDA_TAG}"
-conda run -n humotech python -m pip install -e ".[pose,refine,dev]"
+conda run -n humotech python -m pip install -e ".[pose,refine,app,dev]"
 # GPU ONNX Runtime for rtmlib (replace the CPU build). The [cuda,cudnn] extras pull the CUDA/cuDNN
 # runtime libs that match this onnxruntime-gpu build as pip wheels, so no system CUDA toolkit is needed
 # (the plain package expects e.g. libcublasLt.so.13 on the system and silently falls back to CPU).

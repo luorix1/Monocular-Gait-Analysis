@@ -37,7 +37,7 @@ Or install by hand into an existing conda env:
 
 ```bash
 conda env create -f environment.yml          # or: conda install -c opensim-org opensim
-pip install -e ".[pose,refine,dev]"          # extras: pose | yolo | refine | gpu3d | dev
+pip install -e ".[pose,refine,app,dev]"      # extras: pose | yolo | refine | gpu3d | app | dev
 ```
 
 | Extra | Provides | Needed for |
@@ -46,12 +46,48 @@ pip install -e ".[pose,refine,dev]"          # extras: pose | yolo | refine | gp
 | `yolo` | ultralytics | YOLO-pose fallback (no foot keypoints, so results are degraded) |
 | `refine` | torch | treadmill-constrained 3D refinement |
 | `gpu3d` | torch + smplx | GVHMR / WHAM lifters (Ubuntu + NVIDIA, see `scripts/install_gvhmr.sh`) |
-| `dev` | pytest, ruff | tests, linting |
+| `app` | fastapi + uvicorn | the web app (`humotech app`) |
+| `dev` | pytest, ruff, httpx | tests, linting |
 
 Optional: `bash scripts/fetch_opensim_geometry.sh` downloads the bone meshes so the model renders
 in the OpenSim GUI (not needed for the analysis).
 
-## 2. Sanity check on synthetic data
+## 2. Web app
+
+Everything below can be done from a browser UI instead of the command line: create subjects,
+add videos, calibrate the camera and the belt, process trials in the background and browse the
+results.
+
+```bash
+conda activate humotech
+humotech app                          # opens http://localhost:8000, data folder ./data
+humotech app --data /path/to/data --port 8080 --no-browser
+humotech app --host 0.0.0.0           # reachable from other machines on the network (no login, trusted LAN only)
+```
+
+| Page | What it does |
+|---|---|
+| **Subjects** | one card per subject folder in `data/`; progress of each |
+| **Subject** | 4-step checklist (details → camera → belt → process), trial table with live status and key results, drag-and-drop video upload, video roles (trial / checkerboard) |
+| **Belt calibration** | pick a frame, click the 4 belt corners (magnifier, drag to adjust, arrow keys to nudge, warning if two corners look swapped), add measured off-belt points, solve; shows per-point error and the grid overlay |
+| **Results** | belt speed vs treadmill, parameter table (mean ± SD, L/R, symmetry, CV), joint angles over the gait cycle, stride-by-stride chart, video review with 2D keypoints and the detected events, downloads |
+| **Cameras** | checkerboard intrinsics (runs `humotech intrinsics`), quality and which subjects use them |
+| **Jobs** | queue of background runs (one at a time), live log and progress, cancel |
+| **System** | installed packages, GPU / CUDA readiness, self-test on synthetic data |
+
+How it fits together:
+
+* The app works on the same folder layout as the CLI: `data/<subject>/` holds the videos,
+  `calibration.json`, and `subject.json` (height, mass, chosen intrinsics). Results go to
+  `data/<subject>/results/<trial>/`. Videos copied or symlinked into a subject folder show up
+  without uploading.
+* Processing runs `humotech run` as a subprocess per trial, so the server stays up if a run
+  crashes, and logs are kept in `data/.jobs/`. The settings chosen in the dialog are saved next to
+  the results (`run_config.yaml`, `run.json`).
+* The treadmill speed entered when processing (pre-filled from names like `1p2mps_walk`) is
+  only used to check the estimate, unless you choose "Use treadmill speed".
+
+## 3. Sanity check on synthetic data
 
 ```bash
 humotech synth --run                 # writes data/synthetic/ and runs the full pipeline on it
@@ -72,12 +108,12 @@ the recovered parameters next to the truth. A committed reference run is in
 The synthetic walker is kinematically simple, so this checks the *pipeline* (geometry,
 bookkeeping, optimisation), not real-world accuracy.
 
-## 3. Processing a real session
+## 4. Processing a real session
 
 Session data lives in `data/<subject>/` (see [data/README.md](data/README.md)). Videos are
 git-ignored; calibration JSONs and results can be committed.
 
-### 3.1 Lens intrinsics (once per camera + zoom setting)
+### 4.1 Lens intrinsics (once per camera + zoom setting)
 
 Record a short video of a printed checkerboard held at many positions and angles (fill the corners
 of the frame too, and tilt the board ±30–45°), **with the same camera, resolution, zoom and focus as
@@ -104,7 +140,7 @@ fx ≈ fy ≈ 1760 px, RMS 0.35 px.
 If you change camera, resolution, orientation or zoom, redo this step. The intrinsics `image_size`
 must match the trial videos.
 
-### 3.2 Extrinsics: click the belt (once per camera placement)
+### 4.2 Extrinsics: click the belt (once per camera placement)
 
 ```bash
 humotech calibrate data/S01/trial.mp4 --belt-length 1.60 --belt-width 0.50 \
@@ -120,7 +156,7 @@ must sit on the belt and the green posts are 1 m tall. Errors above 2–3 px usu
 mis-click or wrong belt dimensions. Details and the `--extra` YAML format:
 [docs/calibration.md](docs/calibration.md#clicking-humotech-calibrate).
 
-### 3.3 Run the pipeline
+### 4.3 Run the pipeline
 
 ```bash
 humotech run --video data/S01/trial.mp4 --calib data/S01/calibration.json \
@@ -130,7 +166,7 @@ humotech run --video data/S01/trial.mp4 --calib data/S01/calibration.json \
 | Option | Meaning |
 |---|---|
 | `--video` / `--kp2d` | input video, or an existing `kp2d_raw.npz` to skip 2D detection |
-| `--calib` | `calibration.json` from step 3.2 (required) |
+| `--calib` | `calibration.json` from step 4.2 (required) |
 | `--height`, `--mass` | subject height (m) and mass (kg); override the config |
 | `--config` | YAML overriding [configs/default.yaml](configs/default.yaml) |
 | `--device` | `cpu` / `cuda` / `mps`, used for pose and refinement |
@@ -139,7 +175,7 @@ humotech run --video data/S01/trial.mp4 --calib data/S01/calibration.json \
 Intermediates are cached in the output folder, so re-running after a config change only redoes
 the affected stages. `humotech detect video.mp4 --out kp2d_raw.npz` runs only the 2D pose stage.
 
-### 3.4 Outputs (`results/`)
+### 4.4 Outputs (`results/`)
 
 | File | Content |
 |---|---|
@@ -155,7 +191,7 @@ the affected stages. `humotech detect video.mp4 --out kp2d_raw.npz` runs only th
 Coordinate frame (= OpenSim ground): origin at the belt centre, **+X forward**, **+Y up**
 (belt is Y = 0), **+Z subject's right**.
 
-## 4. Configuration
+## 5. Configuration
 
 All options are in [configs/default.yaml](configs/default.yaml); copy it per session and pass
 `--config`. The ones most often changed:
@@ -169,13 +205,13 @@ All options are in [configs/default.yaml](configs/default.yaml); copy it per ses
 | `events.hs_offset_ms`, `to_offset_ms` | 0 | constant corrections learned against force plates |
 | `belt_speed.source` | `refined` | set `known` + `known_m_s` to use the treadmill's displayed speed |
 
-## 5. What to record / measure
+## 6. What to record / measure
 
 See **[docs/calibration.md](docs/calibration.md)**. Minimum: belt length & width (the 4 corners
 you click), subject height & mass. Strongly recommended, in order of value:
 
 1. **Checkerboard intrinsics** for the camera (focal length + lens distortion). Focal length from
-   only 4 coplanar points is the weakest link of the calibration. (Done for S01, see 3.1.)
+   only 4 coplanar points is the weakest link of the calibration. (Done for S01, see 4.1.)
 2. **One or more off-belt landmarks with known 3D position** (e.g. handrail top at a measured
    height, or a box/pole of known size placed on the belt for one frame).
 3. **Force-plate events + the treadmill's displayed speed** for a few trials. The instrumented
@@ -186,7 +222,7 @@ you click), subject height & mass. Strongly recommended, in order of value:
 Camera: static tripod, side-on, mounted above hip height and tilted down, ≥ 60 fps, short shutter,
 focus/zoom/exposure locked, stabilisation off.
 
-## 6. Repository layout
+## 7. Repository layout
 
 ```
 src/humotech/
@@ -197,8 +233,9 @@ src/humotech/
   gait/         events (Zeni, velocity), belt speed, spatiotemporal parameters
   synth/        synthetic treadmill walker with exact ground truth (tests, demos)
   io/           video frame iteration, keypoint containers
+  app/          web app: FastAPI server, job runner, static UI (no build step, no CDN)
   pipeline.py   end-to-end orchestration with cached intermediates
-  cli.py        `humotech …` commands: check, synth, intrinsics, calibrate, detect, run
+  cli.py        `humotech …` commands: app, check, synth, intrinsics, calibrate, detect, run
 opensim_models/ Pose2Sim model + Halpe-26 marker set + IK/scaling setups (BSD-3, see LICENSE_Pose2Sim)
 configs/        default.yaml: all pipeline options
 data/           intrinsics.json, per-subject sessions, synthetic reference run
@@ -207,34 +244,34 @@ scripts/        setup_mac.sh, setup_ubuntu.sh, install_gvhmr.sh, fetch_opensim_g
 tests/          pytest suite (synthetic ground truth; torch/OpenSim tests auto-skip if missing)
 ```
 
-## 7. Tests
+## 8. Tests
 
 ```bash
 pytest                    # ≈30 s; torch / OpenSim tests skip automatically if those aren't installed
 pytest -m "not opensim"   # markers: opensim, torch, slow
 ```
 
-## 8. Status (Nov 2026)
+## 9. Status (Nov 2026)
 
 | Component | State |
 |---|---|
 | Checkerboard intrinsics | implemented; **run on real data** (S01, RMS 0.35 px) |
 | Belt-corner calibration (focal from homography, PnP, extra landmarks) | implemented, tested on synthetic |
-| Click tool for landmarks (OpenCV window) | implemented, needs a manual try on a real frame |
+| Click tool for landmarks | in the web app; the OpenCV window (`humotech calibrate`) remains for the CLI |
 | 2D pose: rtmlib RTMPose Halpe-26 | implemented; first real run pending |
 | 2D pose: YOLO-pose | implemented (no feet, so degraded) |
 | Planar 3D init + treadmill-constrained refinement | implemented, tested (recovers 8 % scale + 12 cm offset errors, belt speed < 3 %) |
 | GVHMR / WHAM adapters | written against their public output formats; **verify on Ubuntu** |
 | OpenSim scale + IK + FK | implemented, tested with OpenSim 4.6 (conda, Linux) |
 | Events, belt speed, spatiotemporal | implemented, tested; synthetic reference run committed |
-| GUI | not started; planned on Ubuntu (see [docs/ubuntu_handoff.md](docs/ubuntu_handoff.md)) |
+| Web app | implemented; API + job runner tested; checked against S01 (frames, calibration, intrinsics job) on the Mac. **First full GPU run from the app pending on Ubuntu** |
 
 Verified so far: full suite (22 tests) with OpenSim 4.6 + PyTorch 2.x CPU on Linux x86_64 (same
 conda env as `environment.yml`); core tests (no torch/OpenSim) in a Linux VM on the Mac;
 `humotech intrinsics` on a real checkerboard video. `scripts/setup_mac.sh` on native macOS has not
 been confirmed yet.
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 * **`Only N usable checkerboard views; need >= 8`**: check `--board` counts *inner* corners;
   lower `--step`; make sure the whole board is visible and sharp in many frames.

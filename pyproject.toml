@@ -27,7 +27,9 @@ yolo = ["ultralytics>=8.3"]
 refine = ["torch>=2.2"]
 # SMPL-based lifters (GVHMR / WHAM) on Ubuntu + NVIDIA
 gpu3d = ["torch>=2.2", "smplx>=0.1.28"]
-dev = ["pytest>=7", "ruff"]
+# web app (`humotech app`)
+app = ["fastapi>=0.110", "uvicorn>=0.27"]
+dev = ["pytest>=7", "ruff", "httpx"]
 # NOTE: OpenSim (python bindings) is installed with conda:  conda install -c opensim-org opensim
 
 [project.scripts]
@@ -35,6 +37,9 @@ humotech = "humotech.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"humotech.app" = ["static/*.html", "static/*.css", "static/js/*.js", "static/js/pages/*.js"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
