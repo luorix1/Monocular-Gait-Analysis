@@ -1,4 +1,4 @@
-"""FastAPI server for the HumoTech web app. Start with `humotech app` (see cli.py)."""
+"""FastAPI server for the Humotech Gait Analysis web app. Start with `humotech app` (see cli.py)."""
 from __future__ import annotations
 
 import json
@@ -30,10 +30,10 @@ def _deep_update(a: dict, b: dict) -> dict:
     return a
 
 
-def create_app(data_root: str | Path) -> FastAPI:
+def create_app(data_root: str | Path, start_worker: bool = True) -> FastAPI:
     ws = Workspace(data_root)
-    jobs = JobManager(ws.root)
-    app = FastAPI(title="HumoTech", version=__version__, docs_url="/api/docs", redoc_url=None)
+    jobs = JobManager(ws.root, start=start_worker)
+    app = FastAPI(title="Humotech Gait Analysis", version=__version__, docs_url="/api/docs", redoc_url=None)
     app.state.ws, app.state.jobs = ws, jobs
     sys_cache: dict = {}
 

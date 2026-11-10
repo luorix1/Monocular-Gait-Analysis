@@ -97,7 +97,7 @@ export async function render(view, [sid, tid], ctx) {
 
   // ----------------------------------------------------------- joint angles
   view.append(h("div", { class: "section-title" }, h("h2", {}, "Joint angles over the gait cycle"),
-    h("span", { class: "hint" }, "OpenSim inverse kinematics, heel strike to heel strike")));
+    h("span", { class: "hint" }, "OpenSim inverse kinematics, heel strike to heel strike. Sagittal plane only; hip adduction/rotation are in ik.mot but poorly observed from one side-on camera.")));
   if (r.joint_angles?.length) {
     const grid = h("div", { class: "grid-3" });
     const ja = card(null, null, null, h("div", { class: "card-body", style: { display: "grid", gap: "14px" } }, legend(["L", "R"], true), grid));

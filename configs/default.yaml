@@ -1,4 +1,4 @@
-# HumoTech pipeline configuration. Copy per session and edit.
+# Humotech Gait Analysis pipeline configuration. Copy per session and edit.
 subject:
   height_m: 1.75
   mass_kg: 70.0

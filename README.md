@@ -1,4 +1,6 @@
-# HumoTech: single-camera treadmill gait analysis
+# Humotech Gait Analysis
+
+Single-camera treadmill gait analysis, built for Humotech.
 
 One video of a person walking on a treadmill → OpenSim-constrained joint kinematics →
 gait events → spatiotemporal parameters (stride frequency, stride/step length, stance %, …),
@@ -57,6 +59,10 @@ in the OpenSim GUI (not needed for the analysis).
 Everything below can be done from a browser UI instead of the command line: create subjects,
 add videos, calibrate the camera and the belt, process trials in the background and browse the
 results.
+
+**User manual** with screenshots, diagrams and a recorded belt-calibration walkthrough:
+[src/humotech/app/static/manual/index.html](src/humotech/app/static/manual/index.html), also under
+**Manual** in the app's sidebar (`http://localhost:8000/static/manual/index.html`).
 
 ```bash
 conda activate humotech
@@ -143,7 +149,7 @@ must match the trial videos.
 ### 4.2 Extrinsics: click the belt (once per camera placement)
 
 ```bash
-humotech calibrate data/S01/trial.mp4 --belt-length 1.60 --belt-width 0.50 \
+humotech calibrate data/S01/0p8mps_walk.mov --belt-length 1.00 --belt-width 0.50 \
         --intrinsics data/intrinsics.json --out data/S01/calibration.json
         # optional: --extra data/S01/extra_landmarks.yaml  --frame 120
 ```
@@ -159,9 +165,11 @@ mis-click or wrong belt dimensions. Details and the `--extra` YAML format:
 ### 4.3 Run the pipeline
 
 ```bash
-humotech run --video data/S01/trial.mp4 --calib data/S01/calibration.json \
-        --height 1.78 --mass 72 --out data/S01/results
+humotech run --video data/S01/1p2mps_walk.mov --calib data/S01/calibration.json \
+        --height 1.78 --mass 72 --out data/S01/results/1p2mps_walk
 ```
+
+Use `results/<video name without extension>` as `--out` so the web app finds the results.
 
 | Option | Meaning |
 |---|---|
@@ -169,7 +177,7 @@ humotech run --video data/S01/trial.mp4 --calib data/S01/calibration.json \
 | `--calib` | `calibration.json` from step 4.2 (required) |
 | `--height`, `--mass` | subject height (m) and mass (kg); override the config |
 | `--config` | YAML overriding [configs/default.yaml](configs/default.yaml) |
-| `--device` | `cpu` / `cuda` / `mps`, used for pose and refinement |
+| `--device` | `cpu` / `cuda` / `mps`, used for pose and refinement (overrides the config, which defaults pose to `cuda`) |
 | `--force` | recompute everything instead of reusing cached intermediates in `--out` |
 
 Intermediates are cached in the output folder, so re-running after a config change only redoes
@@ -199,6 +207,7 @@ All options are in [configs/default.yaml](configs/default.yaml); copy it per ses
 | Key | Default | Notes |
 |---|---|---|
 | `pose2d.backend` / `mode` | `rtmlib` / `balanced` | `performance` is more accurate, slower |
+| `pose2d.device` | `cuda` | set `cpu` (or pass `--device cpu`) on machines without an NVIDIA GPU, e.g. the Mac |
 | `lift.backend` | `planar` | `gvhmr` / `wham` need their result file in `lift.result_path` (GPU) |
 | `refine.device` | `cpu` | `cuda` on Ubuntu |
 | `events.method` / `source` | `zeni` / `opensim` | `velocity`; `refined` or `2d` if OpenSim is unavailable |
@@ -266,9 +275,10 @@ pytest -m "not opensim"   # markers: opensim, torch, slow
 | Events, belt speed, spatiotemporal | implemented, tested; synthetic reference run committed |
 | Web app | implemented; API + job runner tested; checked against S01 (frames, calibration, intrinsics job) on the Mac. **First full GPU run from the app pending on Ubuntu** |
 
-Verified so far: full suite (22 tests) with OpenSim 4.6 + PyTorch 2.x CPU on Linux x86_64 (same
-conda env as `environment.yml`); core tests (no torch/OpenSim) in a Linux VM on the Mac;
-`humotech intrinsics` on a real checkerboard video. `scripts/setup_mac.sh` on native macOS has not
+Verified so far: the pipeline tests (22) with OpenSim 4.6 + PyTorch 2.x CPU on Linux x86_64 (same
+conda env as `environment.yml`); core + web-app tests (25 pass, 4 torch/OpenSim tests skipped) in a
+plain Python 3.12 venv on the Mac; `humotech intrinsics` on a real checkerboard video, from the CLI
+and from the app. `scripts/setup_mac.sh` on native macOS has not
 been confirmed yet.
 
 ## 10. Troubleshooting
@@ -280,5 +290,17 @@ been confirmed yet.
 * **`humotech check` shows `opensim` missing**: OpenSim must come from conda
   (`conda install -c opensim-org opensim`), not pip. Without it, set `opensim.enabled: false` and
   `events.source: refined`.
+* **`humotech app`: address already in use**: another program has port 8000 (on a Mac this is
+  often VS Code forwarding a port; see its Ports panel). Use another port: `humotech app --port 8080`.
+  To see who holds it: `lsof -nP -iTCP:8000 -sTCP:LISTEN` (Mac) or `sudo ss -ltnp 'sport = :8000'` (Ubuntu).
+* **GPU run fails with "onnxruntime fell back to CPU"** (or `libcublasLt.so.13` errors): the
+  onnxruntime-gpu build needs a newer CUDA than the driver supports. Check the driver's CUDA version
+  with `nvidia-smi`; with driver < 580 (CUDA 12) install `pip install "onnxruntime-gpu[cuda,cudnn]==1.22.*"`
+  in the humotech env (`setup_ubuntu.sh cu124` does this). Or process with device CPU.
+* **macOS: `OMP: Error #15 … libomp.dylib already initialized`** on `import torch`: PyTorch from
+  pip clashes with the conda packages' OpenMP. `pip uninstall torch && conda install -c conda-forge pytorch`
+  (`setup_mac.sh` now does this, and forces native arm64 packages even with an Intel miniforge).
+* **Jobs fail with `No module named …`**: the app runs jobs with the Python it was started from.
+  Start it from the `humotech` conda env, not another virtualenv; the System page shows what is missing.
 * **Left/right legs swapped in places**: `clean.fix_lr_swaps` is on by default; a more side-on
   camera and contrasting shoes help.

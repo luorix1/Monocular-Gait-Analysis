@@ -141,6 +141,32 @@ def test_results_payload(client):
     assert s["processed"] and s["has_opensim"] and s["n_strides"] == 3
 
 
+def test_latest_for_matches_kind_and_meta(tmp_path):
+    jm = JobManager(tmp_path)
+    a = Job(id="a", kind="pipeline", title="", argv=[], meta={"subject": "S01", "trial": "t1"}, created=1)
+    b = Job(id="b", kind="pipeline", title="", argv=[], meta={"subject": "S01", "trial": "t1"}, created=2)
+    c = Job(id="c", kind="intrinsics", title="", argv=[], meta={"subject": "S01", "trial": "t1"}, created=3)
+    jm.jobs.update({j.id: j for j in (a, b, c)})
+    assert jm.latest_for(kind="pipeline", subject="S01", trial="t1") is b
+    assert jm.latest_for(kind="pipeline", subject="S01", trial="t2") is None
+    assert jm.latest_for(subject="S01", trial="t1") is c
+
+
+def test_trial_shows_queued_job_and_blocks_duplicates(tmp_path):
+    """The subject view reports a trial's queued job, and the same trial can't be queued twice."""
+    client = TestClient(create_app(tmp_path / "data", start_worker=False))   # real submit, jobs stay queued
+    root = tmp_path / "data"
+    client.post("/api/subjects", json={"id": "S01", "height_m": 1.8, "mass_kg": 75})
+    _write_video(root / "S01" / "t1.avi")
+    (root / "S01" / "calibration.json").write_text("{}")
+    r = client.post("/api/subjects/S01/process", json={"trials": ["t1"]})
+    assert len(r.json()["submitted"]) == 1
+    t = client.get("/api/subjects/S01").json()["trials"][0]
+    assert t["job"] and t["job"]["status"] == "queued"
+    r2 = client.post("/api/subjects/S01/process", json={"trials": ["t1"]}).json()
+    assert r2["submitted"] == [] and r2["skipped"][0]["trial"] == "t1"
+
+
 def test_job_progress_parsing(tmp_path):
     jm = JobManager(tmp_path)
     j = Job(id="x", kind="pipeline", title="t", argv=[])

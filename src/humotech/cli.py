@@ -143,7 +143,7 @@ def cmd_app(a):
     data = Path(a.data).resolve()
     data.mkdir(parents=True, exist_ok=True)
     url = f"http://{'localhost' if a.host in ('127.0.0.1', '0.0.0.0') else a.host}:{a.port}"
-    print(f"HumoTech app: data folder {data}\n  open {url}   (Ctrl+C to stop)")
+    print(f"Humotech Gait Analysis: data folder {data}\n  open {url}   (Ctrl+C to stop)")
     if a.browser:
         import threading
         import webbrowser

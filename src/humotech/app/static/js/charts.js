@@ -9,8 +9,10 @@ function ticks(lo, hi, n = 5) {
   const step0 = (hi - lo) / n;
   const mag = 10 ** Math.floor(Math.log10(step0));
   const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= step0) || 10 * mag;
+  // the axis spans whole steps that enclose [lo, hi], so no data falls outside the plot
   const out = [];
-  for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) out.push(+v.toFixed(10));
+  const end = Math.ceil(hi / step - 1e-9) * step;
+  for (let v = Math.floor(lo / step + 1e-9) * step; v <= end + step * 1e-9; v += step) out.push(+v.toFixed(10));
   return { list: out, step };
 }
 const dec = (step) => Math.max(0, -Math.floor(Math.log10(step) + 1e-9));

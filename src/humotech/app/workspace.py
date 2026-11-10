@@ -19,8 +19,9 @@ RESERVED = {"intrinsics", "synthetic", "results"}
 ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
 CHECKERBOARD_HINT = re.compile(r"intrinsic|checker", re.I)
 SPEED_IN_NAME = re.compile(r"(\d+)p(\d+)\s*mps", re.I)       # e.g. 1p2mps_walk -> 1.2 m/s
-JOINTS = [("hip_flexion", "Hip flexion"), ("hip_adduction", "Hip adduction"), ("hip_rotation", "Hip rotation"),
-          ("knee_angle", "Knee flexion"), ("ankle_angle", "Ankle dorsiflexion")]
+# Sagittal-plane angles only: with one side-on camera, hip adduction/rotation are poorly observable
+# (out of plane) and are left to ik.mot for anyone who wants them.
+JOINTS = [("hip_flexion", "Hip flexion"), ("knee_angle", "Knee flexion"), ("ankle_angle", "Ankle dorsiflexion")]
 
 
 class NotFound(Exception):

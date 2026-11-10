@@ -25,6 +25,7 @@ const NAV = [
   ["cameras", "#/cameras", "camera", "Cameras"],
   ["jobs", "#/jobs", "list", "Jobs"],
   ["system", "#/system", "cpu", "System"],
+  ["help", "/static/manual/index.html", "info", "Manual"],
 ];
 
 // -------------------------------------------------------------- job state
@@ -71,7 +72,7 @@ let current = { key: null };
 function renderNav(section) {
   const nav = clear(document.getElementById("nav"));
   for (const [key, href, ic, label] of NAV) {
-    nav.append(h("a", { href, class: key === section ? "active" : "", dataset: { key } }, icon(ic, 17),
+    nav.append(h("a", { href, class: key === section ? "active" : "", dataset: { key }, target: key === "help" ? "_blank" : null }, icon(ic, 17),
       h("span", { class: "lbl" }, label), key === "jobs" ? h("span", { class: "badge count hidden", id: "jobs-badge" }) : null));
   }
   renderNavBadge();

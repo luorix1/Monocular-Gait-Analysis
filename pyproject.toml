@@ -39,7 +39,8 @@ humotech = "humotech.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"humotech.app" = ["static/*.html", "static/*.css", "static/js/*.js", "static/js/pages/*.js"]
+"humotech.app" = ["static/*.html", "static/*.css", "static/js/*.js", "static/js/pages/*.js",
+                "static/manual/*.html", "static/manual/*.mp4", "static/manual/img/*.webp"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

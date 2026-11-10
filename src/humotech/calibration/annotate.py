@@ -22,7 +22,7 @@ def read_frame(video_path: str, frame_idx: int = 0) -> np.ndarray:
 
 
 def click_landmarks(image: np.ndarray, names: list[str], optional: set[str] | None = None,
-                    window: str = "HumoTech calibration", max_display: int = 1600
+                    window: str = "Humotech Gait Analysis: belt calibration", max_display: int = 1600
                     ) -> dict[str, np.ndarray]:
     optional = optional or set()
     h, w = image.shape[:2]

@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Humotech Gait Analysis User Manual</title>
+<meta name="description" content="How to record, calibrate and analyse treadmill walking with the Humotech Gait Analysis app.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0b0b'/%3E%3Cpath d='M9 23l4-7 3 3 4-9 3 6' fill='none' stroke='white' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light;
+  --page: #f6f6f3; --surface: #ffffff; --surface-2: #f9f9f7; --surface-3: #f0efec;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #7b7a74; --line: rgba(11,11,11,.10); --line-strong: rgba(11,11,11,.18);
+  --accent: #2a78d6; --accent-ink: #1c5cab; --accent-soft: #e6f0fc;
+  --l: #2a78d6; --r: #eb6834; --good: #0ca30c; --good-soft: #e5f5e5; --good-ink: #006300;
+  --warn: #fab219; --warn-soft: #fff4dc; --warn-ink: #7a5200; --bad: #d03b3b; --bad-soft: #fbe9e9; --bad-ink: #a32424;
+  --belt: #3a3a38; --code-bg: #0f0f0e; --code-ink: #e7e6e0;
+  --shadow: 0 1px 2px rgba(11,11,11,.05), 0 4px 16px rgba(11,11,11,.05);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0f0f0e; --surface: #1a1a19; --surface-2: #20201f; --surface-3: #2a2a28;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #8d8c86; --line: rgba(255,255,255,.10); --line-strong: rgba(255,255,255,.18);
+    --accent: #5598e7; --accent-ink: #86b6ef; --accent-soft: #17283d;
+    --l: #3987e5; --r: #d95926; --good-soft: #142914; --good-ink: #3fc23f; --warn-soft: #2e2510; --warn-ink: #fab219;
+    --bad-soft: #321616; --bad-ink: #ef7272; --belt: #77766f; --code-bg: #0b0b0a;
+    --shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0f0f0e; --surface: #1a1a19; --surface-2: #20201f; --surface-3: #2a2a28;
+  --ink: #f0efec; --ink-2: #c3c2b7; --muted: #8d8c86; --line: rgba(255,255,255,.10); --line-strong: rgba(255,255,255,.18);
+  --accent: #5598e7; --accent-ink: #86b6ef; --accent-soft: #17283d;
+  --l: #3987e5; --r: #d95926; --good-soft: #142914; --good-ink: #3fc23f; --warn-soft: #2e2510; --warn-ink: #fab219;
+  --bad-soft: #321616; --bad-ink: #ef7272; --belt: #77766f; --code-bg: #0b0b0a;
+  --shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 20px; }
+body { margin: 0; font: 16px/1.65 var(--font); color: var(--ink); background: var(--page); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent-ink); }
+img, video, svg { max-width: 100%; }
+code { font-family: var(--mono); font-size: .88em; background: var(--surface-3); padding: .1em .35em; border-radius: 5px; }
+pre { background: var(--code-bg); color: var(--code-ink); padding: 14px 16px; border-radius: 10px; overflow-x: auto; font: 13.5px/1.6 var(--mono); margin: 14px 0; }
+pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+pre .c { color: #8d8c86; }
+kbd { font: 600 12.5px var(--mono); border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; background: var(--surface); }
+h1, h2, h3, h4 { line-height: 1.25; letter-spacing: -0.015em; margin: 0; }
+
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); max-width: 1240px; margin: 0 auto; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 28px 18px 28px 24px; font-size: 14px; border-right: 1px solid var(--line); }
+.toc .brand { display: flex; gap: 10px; align-items: center; margin-bottom: 22px; text-decoration: none; color: inherit; }
+.toc .mark { width: 30px; height: 30px; border-radius: 8px; background: var(--ink); color: var(--page); display: grid; place-items: center; }
+.toc .brand b { display: block; font-size: 15px; } .toc .brand span { font-size: 12px; color: var(--muted); }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.toc ol ol { padding-left: 14px; margin: 2px 0 6px; }
+.toc a { display: block; padding: 4px 8px; border-radius: 6px; color: var(--ink-2); text-decoration: none; }
+.toc a:hover { background: var(--surface-3); color: var(--ink); }
+.toc a.on { color: var(--ink); background: var(--surface); box-shadow: var(--shadow); font-weight: 600; }
+.toc .tools { margin-top: 20px; display: flex; gap: 8px; }
+.btn { display: inline-flex; gap: 6px; align-items: center; height: 32px; padding: 0 12px; border-radius: 7px; border: 1px solid var(--line-strong);
+  background: var(--surface); color: var(--ink); font: 600 13px var(--font); cursor: pointer; text-decoration: none; }
+.btn:hover { background: var(--surface-3); }
+
+main { padding: 40px 56px 120px; min-width: 0; }
+section.chapter { max-width: 860px; margin-bottom: 72px; }
+.eyebrow { font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--accent-ink); margin-bottom: 8px; }
+h1.title { font-size: 40px; letter-spacing: -0.03em; margin-bottom: 14px; }
+.lede { font-size: 19px; color: var(--ink-2); max-width: 720px; }
+h2 { font-size: 28px; margin: 0 0 14px; padding-top: 8px; }
+h3 { font-size: 20px; margin: 36px 0 10px; }
+h4 { font-size: 16px; margin: 22px 0 6px; }
+p { margin: 10px 0; }
+ul, ol.steps-list { padding-left: 22px; } li { margin: 4px 0; }
+.muted { color: var(--muted); } .small { font-size: 14px; }
+
+figure { margin: 22px 0; }
+figure.shot img, figure.shot video { display: block; width: 100%; border-radius: 12px; border: 1px solid var(--line); box-shadow: var(--shadow); background: var(--surface); }
+figure.shot img { cursor: zoom-in; }
+figure.narrow { max-width: 560px; }
+figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); }
+.diagram svg { display: block; width: 100%; height: auto; }
+.diagram text { font-family: var(--font); fill: var(--ink-2); }
+
+.callout { display: flex; gap: 12px; padding: 14px 16px; border-radius: 10px; margin: 18px 0; background: var(--surface-2); border: 1px solid var(--line); font-size: 15px; }
+.callout .ic { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 13px var(--font); color: #fff; margin-top: 2px; }
+.callout.tip { background: var(--accent-soft); border-color: transparent; } .callout.tip .ic { background: var(--accent); }
+.callout.warn { background: var(--warn-soft); border-color: transparent; } .callout.warn .ic { background: var(--warn); color: #0b0b0b; }
+.callout.good { background: var(--good-soft); border-color: transparent; } .callout.good .ic { background: var(--good); }
+.callout p { margin: 0; } .callout p + p { margin-top: 6px; }
+
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; margin: 14px 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+th { text-align: left; font-size: 12.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); background: var(--surface-2); padding: 10px 14px; border-bottom: 1px solid var(--line); }
+td { padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+.tw { overflow-x: auto; }
+
+.flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; margin: 26px 0; }
+.flow .node { flex: 1 1 120px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; box-shadow: var(--shadow); font-size: 14px; }
+.flow .node b { display: block; font-size: 14.5px; margin-bottom: 2px; }
+.flow .node span { color: var(--muted); font-size: 13px; line-height: 1.4; display: block; }
+.flow .arrow { display: grid; place-items: center; color: var(--muted); font-size: 18px; flex: none; }
+.flow .node.input { background: var(--accent-soft); border-color: transparent; }
+.flow .node.out { background: var(--good-soft); border-color: transparent; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 18px 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
+.card .n { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--page); display: grid; place-items: center; font: 700 13px var(--font); margin-bottom: 8px; }
+.card b { display: block; margin-bottom: 4px; } .card p { margin: 0; font-size: 14px; color: var(--ink-2); }
+
+/* step-through walkthrough */
+.walk { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; margin: 22px 0; }
+.walk-stage { position: relative; background: var(--surface-3); }
+.walk-stage img { display: block; width: 100%; cursor: zoom-in; }
+.walk-bar { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-top: 1px solid var(--line); }
+.walk-num { flex: none; font: 700 13px var(--font); color: var(--muted); padding-top: 6px; min-width: 44px; }
+.walk-text { flex: 1; font-size: 15px; } .walk-text b { display: block; }
+.walk-nav { display: flex; gap: 6px; flex: none; }
+.walk-dots { display: flex; gap: 6px; padding: 0 16px 14px; }
+.walk-dots button { width: 9px; height: 9px; border-radius: 50%; border: 0; background: var(--line-strong); padding: 0; cursor: pointer; }
+.walk-dots button.on { background: var(--accent); }
+
+details.faq { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; margin: 10px 0; }
+details.faq summary { cursor: pointer; padding: 12px 16px; font-weight: 600; list-style: none; }
+details.faq summary::-webkit-details-marker { display: none; }
+details.faq summary::before { content: "+"; display: inline-block; width: 18px; color: var(--muted); }
+details.faq[open] summary::before { content: "–"; }
+details.faq > div { padding: 0 16px 14px 34px; color: var(--ink-2); font-size: 15px; }
+
+.lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.82); display: none; place-items: center; z-index: 100; padding: 24px; cursor: zoom-out; }
+.lightbox.on { display: grid; }
+.lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; margin-right: 4px; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 16px; }
+  nav.toc ol ol { display: none; }
+  main { padding: 28px 16px 80px; }
+  h1.title { font-size: 30px; }
+  .two { grid-template-columns: 1fr; }
+}
+</style>
+<script>try { const t = localStorage.getItem("humotech-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <a class="brand" href="#top"><span class="mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18l5-8 4 4 5-10 4 7"/></svg></span><span><b>Humotech Gait Analysis</b><span>User manual</span></span></a>
+  <ol>
+    <li><a href="#overview">1. What the app does</a></li>
+    <li><a href="#record">2. Recording a session</a>
+      <ol><li><a href="#camera-setup">Camera placement</a></li><li><a href="#measure">What to measure</a></li><li><a href="#checkerboard">Checkerboard video</a></li></ol></li>
+    <li><a href="#start">3. Starting the app</a></li>
+    <li><a href="#walkthrough">4. Step by step</a>
+      <ol><li><a href="#subject">4.1 Create a subject</a></li><li><a href="#videos">4.2 Add videos</a></li><li><a href="#intrinsics">4.3 Calibrate the camera</a></li>
+        <li><a href="#belt">4.4 Calibrate the belt</a></li><li><a href="#process">4.5 Process trials</a></li><li><a href="#results">4.6 Read the results</a></li></ol></li>
+    <li><a href="#parameters">5. Gait parameters explained</a></li>
+    <li><a href="#files">6. Files and folders</a></li>
+    <li><a href="#cli">7. Command line</a></li>
+    <li><a href="#trouble">8. Troubleshooting</a></li>
+  </ol>
+  <div class="tools"><button class="btn" id="theme" type="button">Dark mode</button><a class="btn" href="/" id="openapp">Open app</a></div>
+</nav>
+
+<main id="top">
+<!-- ======================================================================= intro -->
+<section class="chapter" id="overview">
+  <div class="eyebrow">Humotech Gait Analysis · User manual</div>
+  <h1 class="title">Treadmill gait analysis from one video</h1>
+  <p class="lede">Humotech Gait Analysis turns a single side-on video of someone walking on a treadmill into joint angles, gait events and spatiotemporal parameters. It also estimates the belt speed from the feet, so you don't need to read the treadmill.</p>
+
+  <div class="flow" role="img" aria-label="Processing pipeline: video, 2D pose, 3D lift, treadmill-constrained refinement using the calibration, OpenSim scaling and inverse kinematics, gait events, gait parameters and belt speed">
+    <div class="node input"><b>Video</b><span>side-on, one camera</span></div><div class="arrow">→</div>
+    <div class="node"><b>2D pose</b><span>26 keypoints incl. heels and toes</span></div><div class="arrow">→</div>
+    <div class="node"><b>3D lift</b><span>back-projected onto the belt</span></div><div class="arrow">→</div>
+    <div class="node"><b>Refinement</b><span>constant bones, stance foot moves with the belt</span></div><div class="arrow">→</div>
+    <div class="node"><b>OpenSim</b><span>scaled model, inverse kinematics</span></div><div class="arrow">→</div>
+    <div class="node out"><b>Results</b><span>events, stride/step parameters, joint angles, belt speed</span></div>
+  </div>
+
+  <p>A session always follows the same four steps. The app keeps track of them and shows what is still missing.</p>
+  <div class="cards">
+    <div class="card"><div class="n">1</div><b>Camera</b><p>Calibrate the lens once from a checkerboard video.</p></div>
+    <div class="card"><div class="n">2</div><b>Subject</b><p>Height, mass and the treadmill videos.</p></div>
+    <div class="card"><div class="n">3</div><b>Belt</b><p>Click the four belt corners on one frame.</p></div>
+    <div class="card"><div class="n">4</div><b>Process</b><p>Runs in the background; results appear per trial.</p></div>
+  </div>
+</section>
+
+<!-- ======================================================================= recording -->
+<section class="chapter" id="record">
+  <div class="eyebrow">Before you start</div>
+  <h2>2. Recording a session</h2>
+  <p>Accuracy is decided at the treadmill, not in the software. Ten minutes of setup saves a lot of re-recording.</p>
+
+  <h3 id="camera-setup">Camera placement</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 820 330" role="img" aria-label="Side view: the camera stands on a tripod 3 to 4 metres to the side of the treadmill, 1.3 to 1.8 metres high, tilted down 20 to 30 degrees so the whole body and the whole belt are in view.">
+      <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
+      <line x1="20" y1="290" x2="800" y2="290" stroke="var(--line-strong)" stroke-width="2"/>
+      <!-- tripod + camera -->
+      <g stroke="var(--ink-2)" stroke-width="3" stroke-linecap="round"><line x1="110" y1="128" x2="80" y2="290"/><line x1="110" y1="128" x2="140" y2="290"/><line x1="110" y1="128" x2="110" y2="290"/></g>
+      <g transform="rotate(14 110 118)"><rect x="88" y="104" width="44" height="28" rx="5" fill="var(--ink)"/><rect x="132" y="111" width="12" height="14" rx="2" fill="var(--ink)"/></g>
+      <!-- view cone -->
+      <path d="M144 122 L770 40 L770 290 L470 290 Z" fill="var(--accent)" opacity=".08"/>
+      <line x1="144" y1="122" x2="770" y2="40" stroke="var(--accent)" stroke-dasharray="5 5" opacity=".6"/>
+      <line x1="144" y1="122" x2="470" y2="290" stroke="var(--accent)" stroke-dasharray="5 5" opacity=".6"/>
+      <!-- treadmill -->
+      <rect x="520" y="262" width="230" height="18" rx="9" fill="var(--belt)"/>
+      <circle cx="530" cy="271" r="8" fill="var(--surface-3)" stroke="var(--belt)" stroke-width="2"/><circle cx="740" cy="271" r="8" fill="var(--surface-3)" stroke="var(--belt)" stroke-width="2"/>
+      <line x1="735" y1="262" x2="760" y2="150" stroke="var(--belt)" stroke-width="4"/><line x1="760" y1="150" x2="700" y2="150" stroke="var(--belt)" stroke-width="4"/>
+      <!-- walker -->
+      <g stroke="var(--ink)" stroke-width="5" stroke-linecap="round" fill="none"><circle cx="640" cy="98" r="15" fill="var(--ink)" stroke="none"/>
+        <line x1="640" y1="115" x2="638" y2="185"/><line x1="638" y1="185" x2="610" y2="258"/><line x1="638" y1="185" x2="670" y2="258"/>
+        <line x1="640" y1="128" x2="618" y2="170"/><line x1="640" y1="128" x2="665" y2="168"/></g>
+      <!-- dimensions -->
+      <line x1="40" y1="118" x2="40" y2="290" stroke="var(--muted)" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="28" y="204" font-size="14" font-weight="600" text-anchor="middle" transform="rotate(-90 28 204)">1.3–1.8 m</text>
+      <line x1="110" y1="310" x2="635" y2="310" stroke="var(--muted)" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      <text x="320" y="326" font-size="14" font-weight="600">3–4 m to the belt centre</text>
+      <path d="M180 117 A 70 70 0 0 1 178 140" fill="none" stroke="var(--muted)"/>
+      <text x="186" y="146" font-size="13">tilt down 20–30°</text>
+      <text x="800" y="22" font-size="13" text-anchor="end">whole body + whole belt in frame, margin above the head</text>
+    </svg>
+  </div>
+  <div class="two">
+    <div>
+      <h4>Position</h4>
+      <ul>
+        <li>Static tripod, <b>side-on</b> to the treadmill (perpendicular to the walking direction).</li>
+        <li><b>Higher than hip height, tilted down.</b> Depth comes mostly from "the stance foot is on the belt", and a downward view constrains that much better.</li>
+        <li>Whole body and the whole visible belt in frame for the entire trial.</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Camera settings</h4>
+      <ul>
+        <li>≥ 60 fps (100–120 preferred), short shutter (≤ 1/500 s).</li>
+        <li><b>Lock</b> focus, zoom and exposure. <b>Turn off</b> stabilisation and lens correction.</li>
+        <li>Same resolution and orientation (portrait/landscape) for all trials and the checkerboard video.</li>
+        <li>Even lighting; shoes that contrast with the belt.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 id="measure">What to measure</h3>
+  <div class="tw"><table>
+    <thead><tr><th>Measure</th><th>Needed?</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><b>Belt length and width</b> between the four corners you will click</td><td>Required</td><td>Sets the metric scale and the belt plane.</td></tr>
+      <tr><td><b>Subject height and mass</b></td><td>Required</td><td>Scales the OpenSim model.</td></tr>
+      <tr><td><b>Checkerboard video</b> with the same camera settings</td><td>Strongly recommended</td><td>Focal length and lens distortion. Four points on a plane only weakly fix the focal length.</td></tr>
+      <tr><td><b>Treadmill speed</b> shown on the display, per trial</td><td>Recommended</td><td>Checks the estimated belt speed. Put it in the file name, e.g. <code>1p2mps_walk.mov</code> for 1.2 m/s, and the app fills it in.</td></tr>
+      <tr><td><b>A point off the belt</b> with a measured position (e.g. handrail top)</td><td>Recommended</td><td>Pins down the camera tilt and focal length; added as a "known point" during belt calibration.</td></tr>
+      <tr><td>3–5 s of <b>quiet standing</b> at the start</td><td>Nice to have</td><td>Cleaner model scaling.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="checkerboard">The checkerboard video</h3>
+  <div class="two">
+    <div class="diagram">
+      <svg viewBox="0 0 340 230" role="img" aria-label="A checkerboard of 8 by 5 squares has 7 by 4 inner corners, marked with dots where four squares meet.">
+        <g id="board"></g>
+        <text x="170" y="222" text-anchor="middle" font-size="13" font-weight="600">8 × 5 squares → board 7 × 4 (inner corners)</text>
+      </svg>
+    </div>
+    <div>
+      <p>Print a checkerboard, glue it to something flat and rigid, and <b>measure one square with a ruler</b> (printers rescale).</p>
+      <p>Film it with the exact camera settings of the trials. Move and tilt it slowly (±30–45°) through the whole frame, including the corners. About 30–60 seconds is plenty.</p>
+      <p>The app asks for the number of <b>inner corners</b>, the points where four squares meet: one less than the number of squares in each direction.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================================= start -->
+<section class="chapter" id="start">
+  <div class="eyebrow">Setup</div>
+  <h2>3. Starting the app</h2>
+  <p>The app runs on the analysis computer and opens in your browser. Install once (see the README), then:</p>
+<pre><code>conda activate humotech
+humotech app                     <span class="c"># opens http://localhost:8000 with the data/ folder</span>
+humotech app --port 8080         <span class="c"># if port 8000 is taken</span>
+humotech app --host 0.0.0.0      <span class="c"># let other computers on the lab network open it (no login!)</span></code></pre>
+  <p>Open <b>System</b> first. It shows whether the GPU and every package are ready. The red and yellow boxes say exactly what is missing.</p>
+  <figure class="shot"><img src="img/38-system.webp" alt="System page: package table with status per package, GPU readiness messages" loading="lazy"><figcaption>System page. On the Ubuntu workstation you should see "GPU ready"; on a laptop without an NVIDIA GPU everything runs on CPU.</figcaption></figure>
+</section>
+
+<!-- ======================================================================= walkthrough -->
+<section class="chapter" id="walkthrough">
+  <div class="eyebrow">Walkthrough</div>
+  <h2>4. Step by step</h2>
+  <p>The screenshots below come from a real session: one subject, three treadmill speeds (0.8, 1.2 and 1.6 m/s). Click any picture to enlarge it.</p>
+
+  <h3 id="subject">4.1 Create a subject</h3>
+  <p>On <b>Subjects</b>, click <b>New subject</b>. The ID becomes the folder name (<code>data/S01</code>). Height and mass are needed before processing; the camera defaults to the lab camera.</p>
+  <div class="two">
+    <figure class="shot"><img src="img/01-subjects-empty.webp" alt="Empty Subjects page with a New subject button" loading="lazy"><figcaption>An empty app.</figcaption></figure>
+    <figure class="shot"><img src="img/02-new-subject.webp" alt="New subject dialog with ID S01, height 1.75 m and mass 70 kg" loading="lazy"><figcaption>The new-subject dialog.</figcaption></figure>
+  </div>
+
+  <h3 id="videos">4.2 Add videos</h3>
+  <p>Drop the videos onto the subject page (or click <b>Add videos</b>). Files copied straight into <code>data/S01/</code> appear too, without uploading.</p>
+  <ul>
+    <li>Videos with <code>intrinsic</code> or <code>checker</code> in the name are treated as <b>checkerboard</b> videos; everything else is a <b>trial</b>. Change it under <b>All videos</b>.</li>
+    <li>A speed in the name (<code>0p8mps</code>, <code>1p2mps</code>) fills in the treadmill speed.</li>
+  </ul>
+  <figure class="shot"><img src="img/04-subject-videos.webp" alt="Subject page with four step cards, a trials table with three videos and a list of all videos" loading="lazy"><figcaption>The subject page after adding three trials and a checkerboard video. The four cards at the top show what is done and what is next.</figcaption></figure>
+
+  <h3 id="intrinsics">4.3 Calibrate the camera (once per camera)</h3>
+  <p>Open <b>Cameras → New from checkerboard</b>. Pick the checkerboard video, enter the inner corners and the square size. The calibration runs in the background (about 20 s for a one-minute video) and the new camera appears in the list.</p>
+  <div class="two">
+    <figure class="shot"><img src="img/06-new-camera.webp" alt="New camera calibration dialog: name, subject, checkerboard video, 7 by 4 inner corners, 40 mm squares, every 20th frame" loading="lazy"><figcaption>The settings used for the lab camera: 7 × 4 inner corners, 40 mm squares.</figcaption></figure>
+    <figure class="shot"><img src="img/05-cameras.webp" alt="Cameras page with one calibrated camera: 1080 by 1920 portrait, focal length 1763 px, RMS 0.35 px" loading="lazy"><figcaption>Each camera shows its quality (RMS) and which subjects use it.</figcaption></figure>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>RMS error</th><th>Meaning</th></tr></thead>
+    <tbody><tr><td><span class="legend-dot" style="background:var(--good)"></span>below 0.5 px</td><td>Good. Use it.</td></tr>
+    <tr><td><span class="legend-dot" style="background:var(--warn)"></span>0.5–1 px</td><td>Usable; check the board size and focus.</td></tr>
+    <tr><td><span class="legend-dot" style="background:var(--bad)"></span>above 1 px</td><td>Something is off: blur, wrong corner count or square size, too few views.</td></tr></tbody>
+  </table></div>
+  <p>Then choose the camera for the subject with <b>Edit details</b>. A camera is only valid for the same resolution, orientation and zoom.</p>
+
+  <h3 id="belt">4.4 Calibrate the belt (once per camera position)</h3>
+  <p>This tells the software where the treadmill is. You click the four corners of the belt surface on one video frame. If the camera did not move between trials, one calibration covers all of them.</p>
+
+  <div class="two">
+    <div class="diagram">
+      <svg viewBox="0 0 320 250" role="img" aria-label="Top view of the treadmill: corner 1 front left, 2 front right, 3 back right, 4 back left. Front is the end the subject faces. X points forward, Z to the subject's right, Y up.">
+        <rect x="95" y="40" width="130" height="170" rx="8" fill="var(--surface-3)" stroke="var(--line-strong)"/>
+        <text x="160" y="24" text-anchor="middle" font-size="13" font-weight="700">FRONT (subject faces this way)</text>
+        <text x="160" y="240" text-anchor="middle" font-size="13" font-weight="700">BACK</text>
+        <circle cx="160" cy="150" r="9" fill="var(--ink-2)"/><path d="M160 136 L160 92 M151 102 L160 90 L169 102" stroke="var(--ink-2)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <g font-size="13" font-weight="700">
+          <circle cx="95" cy="40" r="12" fill="var(--ink)"/><text x="95" y="45" text-anchor="middle" style="fill:var(--page)">1</text><text x="78" y="45" text-anchor="end">front left</text>
+          <circle cx="225" cy="40" r="12" fill="var(--ink)"/><text x="225" y="45" text-anchor="middle" style="fill:var(--page)">2</text><text x="242" y="45">front right</text>
+          <circle cx="225" cy="210" r="12" fill="var(--ink)"/><text x="225" y="215" text-anchor="middle" style="fill:var(--page)">3</text><text x="242" y="215">back right</text>
+          <circle cx="95" cy="210" r="12" fill="var(--ink)"/><text x="95" y="215" text-anchor="middle" style="fill:var(--page)">4</text><text x="78" y="215" text-anchor="end">back left</text>
+        </g>
+        <g stroke-width="2.5" fill="none"><path d="M265 140 L265 100" stroke="#d03b3b" marker-end="url(#axr)"/><path d="M265 140 L305 140" stroke="#2a78d6" marker-end="url(#axb)"/></g>
+        <defs><marker id="axr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#d03b3b"/></marker>
+          <marker id="axb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2a78d6"/></marker></defs>
+        <text x="270" y="98" font-size="12" font-weight="700" style="fill:#d03b3b">X fwd</text><text x="281" y="158" font-size="12" font-weight="700" style="fill:#2a78d6">Z right</text>
+        <circle cx="265" cy="140" r="4" fill="#0ca30c"/><text x="248" y="160" font-size="12" font-weight="700" style="fill:#0ca30c" text-anchor="end">Y up</text>
+      </svg>
+    </div>
+    <div>
+      <h4>Left and right are the subject's</h4>
+      <p><b>Front</b> is the end of the belt the subject faces. <b>Left</b> and <b>right</b> are the subject's own left and right, not the left and right of the picture.</p>
+      <p>Seen from the side, the near corners are on one side of the subject and the far corners on the other. In the walkthrough below the subject walks to the left of the picture, so the front corners are on the left and the subject's left side faces the camera.</p>
+      <p class="small muted">The origin is the centre of the belt surface. All 3D results use this frame, and it is also the OpenSim ground frame.</p>
+    </div>
+  </div>
+
+  <h4>Watch it</h4>
+  <figure class="shot"><video src="calibration.mp4" poster="img/10-calib-start.webp" controls muted playsinline preload="metadata" aria-label="Screen recording of clicking the four belt corners, solving and showing the overlay"></video>
+    <figcaption>Clicking the four corners, solving and checking the overlay (real speed, about 30 s).</figcaption></figure>
+
+  <h4>Step through it</h4>
+  <div class="walk" id="walk-calib">
+    <div class="walk-stage"><img alt=""></div>
+    <div class="walk-bar"><div class="walk-num"></div><div class="walk-text"></div>
+      <div class="walk-nav"><button class="btn" data-d="-1" aria-label="Previous step">←</button><button class="btn" data-d="1" aria-label="Next step">→</button></div></div>
+    <div class="walk-dots"></div>
+  </div>
+
+  <div class="callout warn"><div class="ic">!</div><div><p><b>Corners swapped?</b> If the dashed outline crosses itself, two corners were clicked in the wrong order (usually left and right). The page warns you; click the ↻ next to a point to place it again.</p></div></div>
+  <figure class="shot narrow"><img src="img/11-calib-crossed.webp" alt="Belt outline crossing itself with a red warning that two corners are probably swapped" loading="lazy"><figcaption>What a swapped pair looks like.</figcaption></figure>
+
+  <h4>Is the calibration good?</h4>
+  <div class="tw"><table>
+    <thead><tr><th>Check</th><th>Good</th><th>If not</th></tr></thead>
+    <tbody>
+      <tr><td>RMS reprojection error</td><td>below 1 px (≤ 2.5 px acceptable)</td><td>Re-place points with the magnifier; check the belt size you entered.</td></tr>
+      <tr><td>Orange grid in the overlay</td><td>lies flat on the belt, lines parallel to its edges</td><td>Wrong corner order or wrong belt length/width.</td></tr>
+      <tr><td>Green posts</td><td>look 1 m tall next to the subject or the handrails</td><td>Focal length off: use camera intrinsics or add a known point.</td></tr>
+      <tr><td>Camera height</td><td>matches the tripod (tape-measure it once)</td><td>Same as above.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout tip"><div class="ic">i</div><div><p><b>Precision tips.</b> Pick a frame where all four corners are clearly visible (use the frame slider), hover to use the magnifier, drag points to adjust, and nudge the selected point with the arrow keys (<kbd>Shift</kbd> for 5 px steps).</p></div></div>
+
+  <h3 id="process">4.5 Process trials</h3>
+  <p>Once the four step cards are green, click <b>Process … remaining</b> (or select trials in the table). The dialog shows the treadmill speed per trial and a few choices:</p>
+  <div class="two">
+    <figure class="shot"><img src="img/21-process-dialog.webp" alt="Processing dialog: treadmill speeds 0.8, 1.2 and 1.6 m/s, compute device, pose model, belt speed source, gait event method, OpenSim option" loading="lazy"></figure>
+    <div class="tw"><table>
+      <thead><tr><th>Setting</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td>Compute device</td><td><b>GPU</b> on the Ubuntu workstation; CPU elsewhere (slower 2D pose).</td></tr>
+        <tr><td>2D pose model</td><td><b>Balanced</b> normally. Accurate is slower.</td></tr>
+        <tr><td>Belt speed</td><td><b>Estimate from video</b>. The treadmill speed is then only used as a check. Choose "Use treadmill speed" if you trust the display more.</td></tr>
+        <tr><td>Gait events</td><td><b>Zeni</b> (heel/toe position relative to the pelvis).</td></tr>
+        <tr><td>OpenSim</td><td>On, for joint angles.</td></tr>
+        <tr><td>Re-run 2D pose</td><td>Only after changing the pose model; otherwise the previous keypoints are reused.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <p>Trials are processed one after another in the background. You can keep working, close the tab, or watch the progress:</p>
+  <figure class="shot"><img src="img/22-subject-processing.webp" alt="Trials table with one trial running at 2D pose stage with a progress bar and two queued" loading="lazy"><figcaption>Progress in the trials table. A notification appears when each trial finishes.</figcaption></figure>
+  <div class="two">
+    <figure class="shot"><img src="img/23-jobs.webp" alt="Jobs page listing running and queued jobs" loading="lazy"><figcaption><b>Jobs</b> lists every run.</figcaption></figure>
+    <figure class="shot"><img src="img/24-job-log.webp" alt="Job detail with the current step, progress and the live log" loading="lazy"><figcaption>Each job has a live log and a <b>Cancel</b> button. If a run fails, the log says why.</figcaption></figure>
+  </div>
+  <p class="small muted">Processing time is mostly the 2D pose step (about 10 frames/s on a laptop CPU). The 12-second clips in these screenshots took about 1.5 minutes each on an Apple M4 CPU, OpenSim included; a GPU is several times faster.</p>
+
+  <h3 id="results">4.6 Read the results</h3>
+  <p>When trials are done, the trials table compares them and each row opens the full results.</p>
+  <figure class="shot"><img src="img/31-subject-done.webp" alt="Subject page with all three trials processed: treadmill speed, estimated speed with percentage difference, cadence, stride length, stance and number of strides" loading="lazy"><figcaption>All trials processed. "Estimated m/s" is the belt speed measured from the feet, with its difference to the treadmill display.</figcaption></figure>
+
+  <h4>Headline numbers and the parameter table</h4>
+  <figure class="shot"><img src="img/32-results-top.webp" alt="Results page header with tiles for belt speed, cadence, stride length, stride time, step width and stance" loading="lazy"></figure>
+  <figure class="shot"><img src="img/33-results-table.webp" alt="Spatiotemporal parameter table with mean and SD, left, right, symmetry index and CV" loading="lazy"><figcaption>Mean ± SD over all strides, left and right separately, symmetry index and coefficient of variation. Definitions are in <a href="#parameters">section 5</a>.</figcaption></figure>
+
+  <h4>Joint angles</h4>
+  <figure class="shot"><img src="img/34-results-joints.webp" alt="Joint angle curves over the gait cycle for hip, knee and ankle, left in blue and right in orange, with a shaded band of one standard deviation" loading="lazy"><figcaption>OpenSim joint angles over the gait cycle (heel strike to heel strike), <span class="legend-dot" style="background:var(--l)"></span>left and <span class="legend-dot" style="background:var(--r)"></span>right, mean ± 1 SD. Hover a chart to read values.</figcaption></figure>
+  <div class="callout warn"><div class="ic">!</div><div><p><b>The far-side leg is less reliable.</b> With one side-on camera, the leg farther from the camera is partly hidden behind the near leg, especially the foot in swing. In this example the right ankle (far side) drops unrealistically in swing while the left ankle looks normal. Trust the near side more, and judge the far side with the video review. Only sagittal-plane angles are plotted; hip adduction and rotation are in <code>ik.mot</code> but are poorly observed from the side.</p></div></div>
+
+  <h4>Stride by stride</h4>
+  <figure class="shot"><img src="img/35-results-strides.webp" alt="Stride length for each stride over time, left and right" loading="lazy"><figcaption>Every stride over the trial: look for drift, outliers or a side that behaves differently. Pick the parameter in the menu; the full table is underneath.</figcaption></figure>
+
+  <h4>Check the tracking in the video</h4>
+  <figure class="shot"><img src="img/36-results-video.webp" alt="Video frame with the 2D skeleton, left side blue and right side orange, and a timeline with heel strikes and toe-offs for each foot" loading="lazy"><figcaption>The detected skeleton on the video, with every heel strike (solid) and toe-off (faded) on the timeline. Click the timeline to jump; <kbd>←</kbd> <kbd>→</kbd> step one frame, <kbd>Space</kbd> plays. Look especially for left/right mix-ups of the feet.</figcaption></figure>
+
+  <h4>Belt speed, quality and files</h4>
+  <figure class="shot"><img src="img/37-results-bottom.webp" alt="Belt speed estimates from several methods, reconstruction quality and the list of downloadable files" loading="lazy"><figcaption>The belt speed from independent methods should agree within a few percent. All result files can be downloaded here (CSV and JSON for your own analysis, <code>.osim</code> and <code>.mot</code> for the OpenSim GUI).</figcaption></figure>
+</section>
+
+<!-- ======================================================================= parameters -->
+<section class="chapter" id="parameters">
+  <div class="eyebrow">Reference</div>
+  <h2>5. Gait parameters explained</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 820 190" role="img" aria-label="One gait cycle of the left foot from heel strike to the next heel strike: stance about 60 percent, swing about 40 percent; two double-support periods at the start and end of stance.">
+      <g font-size="13">
+        <text x="40" y="26" font-weight="700" style="fill:var(--l)">Left</text>
+        <rect x="100" y="12" width="420" height="22" rx="5" fill="var(--l)"/><text x="310" y="28" text-anchor="middle" style="fill:#fff" font-weight="700">stance</text>
+        <rect x="520" y="12" width="260" height="22" rx="5" fill="none" stroke="var(--l)" stroke-width="2" stroke-dasharray="4 3"/><text x="650" y="28" text-anchor="middle" font-weight="600" style="fill:var(--l)">swing</text>
+        <text x="40" y="68" font-weight="700" style="fill:var(--r)">Right</text>
+        <rect x="100" y="54" width="70" height="22" rx="5" fill="var(--r)"/>
+        <rect x="170" y="54" width="260" height="22" rx="5" fill="none" stroke="var(--r)" stroke-width="2" stroke-dasharray="4 3"/><text x="300" y="70" text-anchor="middle" font-weight="600" style="fill:var(--r)">swing</text>
+        <rect x="430" y="54" width="350" height="22" rx="5" fill="var(--r)"/><text x="610" y="70" text-anchor="middle" style="fill:#fff" font-weight="700">stance</text>
+        <rect x="100" y="90" width="70" height="14" rx="3" fill="var(--ink-2)" opacity=".35"/><rect x="430" y="90" width="90" height="14" rx="3" fill="var(--ink-2)" opacity=".35"/>
+        <text x="135" y="122" text-anchor="middle" class="small">double support</text><text x="475" y="122" text-anchor="middle">double support</text>
+        <line x1="100" y1="6" x2="100" y2="150" stroke="var(--ink)" stroke-width="2"/><line x1="780" y1="6" x2="780" y2="150" stroke="var(--ink)" stroke-width="2"/>
+        <line x1="430" y1="48" x2="430" y2="150" stroke="var(--ink-2)" stroke-dasharray="3 3"/>
+        <line x1="100" y1="160" x2="780" y2="160" stroke="var(--muted)" marker-start="url(#ah)" marker-end="url(#ah)"/>
+        <text x="440" y="180" text-anchor="middle" font-weight="700">stride (one gait cycle) = left heel strike → next left heel strike</text>
+        <line x1="100" y1="140" x2="430" y2="140" stroke="var(--muted)" marker-end="url(#ah)"/><text x="265" y="135" text-anchor="middle">step (left HS → right HS)</text>
+      </g>
+    </svg>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>Parameter</th><th>Unit</th><th>Definition</th></tr></thead>
+    <tbody>
+      <tr><td>Stride time / frequency</td><td>s / Hz</td><td>Heel strike to the next heel strike of the same foot, and its inverse.</td></tr>
+      <tr><td>Cadence</td><td>steps/min</td><td>120 / stride time.</td></tr>
+      <tr><td>Stride length</td><td>m</td><td>Distance the foot travels over one stride, measured on the belt: belt speed × stride time, corrected for the subject drifting forward or back. Equals the over-ground stride length.</td></tr>
+      <tr><td>Step time / length</td><td>s / m</td><td>From the other foot's heel strike to this foot's heel strike.</td></tr>
+      <tr><td>Step width</td><td>m</td><td>Side-to-side distance between the two heels at heel strike. Less accurate than the other parameters with a single side-on camera.</td></tr>
+      <tr><td>Stance / swing</td><td>s, % cycle</td><td>Foot on the belt (heel strike → toe-off) and in the air (toe-off → heel strike). Typically about 60 / 40 % when walking.</td></tr>
+      <tr><td>Double support</td><td>% cycle</td><td>Both feet on the belt, summed over the two periods in a cycle.</td></tr>
+      <tr><td>Symmetry index</td><td>%</td><td>200 · |L − R| / (L + R). 0 % is perfectly symmetric.</td></tr>
+      <tr><td>CV</td><td>%</td><td>Standard deviation / mean over all strides: how consistent the walking is.</td></tr>
+      <tr><td>Belt speed (estimated)</td><td>m/s</td><td>Speed of the stance foot moving backwards with the belt, from the reconstruction. Compared with the treadmill display as a check.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ======================================================================= files -->
+<section class="chapter" id="files">
+  <div class="eyebrow">Reference</div>
+  <h2>6. Files and folders</h2>
+  <p>Everything is plain files in one data folder, shared by the app and the command line:</p>
+<pre><code>data/
+  intrinsics.json            <span class="c"># default camera</span>
+  intrinsics/&lt;name&gt;.json     <span class="c"># further cameras</span>
+  S01/
+    subject.json             <span class="c"># height, mass, camera, video roles</span>
+    0p8mps_walk.mov ...      <span class="c"># videos</span>
+    calibration.json/.png    <span class="c"># belt calibration + overlay picture</span>
+    results/&lt;trial&gt;/         <span class="c"># everything below, per video</span>
+  .jobs/                     <span class="c"># logs of background runs</span></code></pre>
+  <div class="tw"><table>
+    <thead><tr><th>Result file</th><th>Content</th></tr></thead>
+    <tbody>
+      <tr><td><code>summary.json</code></td><td>Mean, SD, left, right, CV and symmetry for every parameter; belt speed estimates.</td></tr>
+      <tr><td><code>strides.csv</code></td><td>One row per stride. Opens in Excel.</td></tr>
+      <tr><td><code>events.json</code></td><td>Heel-strike and toe-off frames per foot.</td></tr>
+      <tr><td><code>opensim/ik.mot</code>, <code>opensim/scaled.osim</code></td><td>Joint angles and the scaled model; open in the OpenSim GUI.</td></tr>
+      <tr><td><code>kp3d_refined.npz</code>, <code>kp2d.npz</code></td><td>3D and 2D keypoints for further analysis in Python.</td></tr>
+      <tr><td><code>run_config.yaml</code>, <code>config_used.yaml</code>, <code>run.json</code></td><td>Exactly which settings produced these results.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ======================================================================= cli -->
+<section class="chapter" id="cli">
+  <div class="eyebrow">Advanced</div>
+  <h2>7. Command line</h2>
+  <p>Everything in the app is also available as a command, useful for batch processing and scripts. The app runs these same commands in the background.</p>
+<pre><code><span class="c"># camera intrinsics (the command used for the lab camera)</span>
+humotech intrinsics data/S01/intrinsic.mov --board 7x4 --square 0.04 --step 20 --out data/intrinsics.json
+<span class="c"># belt calibration in an OpenCV window</span>
+humotech calibrate data/S01/0p8mps_walk.mov --belt-length 1.00 --belt-width 0.50 \
+    --intrinsics data/intrinsics.json --out data/S01/calibration.json
+<span class="c"># one trial (use results/&lt;video name&gt; so the app finds it)</span>
+humotech run --video data/S01/1p2mps_walk.mov --calib data/S01/calibration.json \
+    --height 1.75 --mass 70 --device cuda --out data/S01/results/1p2mps_walk
+<span class="c"># self-test with a synthetic walker of known answers</span>
+humotech synth --run</code></pre>
+  <p>All options are in <code>configs/default.yaml</code>; see the README for the full reference.</p>
+</section>
+
+<!-- ======================================================================= trouble -->
+<section class="chapter" id="trouble">
+  <div class="eyebrow">Help</div>
+  <h2>8. Troubleshooting</h2>
+  <details class="faq"><summary>"Address already in use" when starting the app</summary><div>Another program uses port 8000. Start with <code>humotech app --port 8080</code>. On a Mac this is often VS Code forwarding a port (Ports panel).</div></details>
+  <details class="faq"><summary>A run fails with "onnxruntime fell back to CPU"</summary><div>The GPU libraries don't match the NVIDIA driver. Process with <b>Compute device: CPU</b> for now, and see the README troubleshooting section for the fix (on driver 535: <code>pip install "onnxruntime-gpu[cuda,cudnn]==1.22.*"</code>).</div></details>
+  <details class="faq"><summary>Jobs fail with "No module named …"</summary><div>The app was started from the wrong Python environment. Stop it and start it again after <code>conda activate humotech</code>. The System page lists what is missing.</div></details>
+  <details class="faq"><summary>"Only N usable checkerboard views"</summary><div>The board was not found in enough frames. Check the inner-corner count (squares − 1), use a smaller frame step, and make sure the whole board is visible and sharp.</div></details>
+  <details class="faq"><summary>"Intrinsics are for a … image but this video is … (rotated)"</summary><div>The checkerboard video was recorded in a different orientation (portrait vs landscape) or resolution than the trial. Record it again with the same settings.</div></details>
+  <details class="faq"><summary>Calibration error is high, or the grid doesn't lie on the belt</summary><div>Usually two corners are swapped (left/right are the subject's), the belt length/width is wrong, or the camera intrinsics belong to another camera setting.</div></details>
+  <details class="faq"><summary>Estimated belt speed is far from the treadmill display</summary><div><p><b>Off by about the same percentage at every speed</b> (for example always 8 % low): that is a scale error. Re-measure the belt length and width between the four points you click and recalibrate; a belt length 8 % too short makes every distance and speed 8 % too small. Also check that the treadmill display is right.</p><p><b>Off by different amounts</b>: check the overlay, then the video review. If the feet are tracked poorly or left and right swap, the events and speed suffer. Better lighting and contrasting shoes help.</p></div></details>
+  <details class="faq"><summary>No joint angles on the results page</summary><div>OpenSim was turned off when processing or isn't installed (see System). The gait parameters are still computed from the 3D keypoints.</div></details>
+  <details class="faq"><summary>"OMP: Error #15 … libomp already initialized" on a Mac</summary><div>PyTorch from pip and the conda packages each bring their own OpenMP library. Install PyTorch from conda-forge instead: <code>pip uninstall torch</code>, then <code>conda install -c conda-forge pytorch</code>.</div></details>
+</section>
+</main>
+</div>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-label="Enlarged image"><img alt=""></div>
+
+<script>
+// ---- checkerboard diagram: 8 x 5 squares with the 7 x 4 inner corners marked
+(function () {
+  const g = document.getElementById("board"), s = 32, x0 = 42, y0 = 18, NS = "http://www.w3.org/2000/svg";
+  const el = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  g.appendChild(el("rect", { x: x0 - 6, y: y0 - 6, width: 8 * s + 12, height: 5 * s + 12, rx: 6, fill: "#fff", stroke: "var(--line-strong)" }));
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 8; c++) if ((r + c) % 2 === 0) g.appendChild(el("rect", { x: x0 + c * s, y: y0 + r * s, width: s, height: s, fill: "#1a1a19" }));
+  for (let r = 1; r < 5; r++) for (let c = 1; c < 8; c++) g.appendChild(el("circle", { cx: x0 + c * s, cy: y0 + r * s, r: 5.5, fill: "#eb6834", stroke: "#fff", "stroke-width": 2 }));
+})();
+
+// ---- calibration walkthrough (stills captured from the app)
+const CALIB_STEPS = [
+  ["img/10-calib-start.webp", "Open the subject and click “Calibrate belt”", "Enter the measured belt length and width on the right and check the camera. Use the frame slider to find a frame where all four corners are visible."],
+  ["img/12-calib-loupe.webp", "Aim with the magnifier", "Hover over the first corner (front left, see the diagram). The round magnifier shows the area under the cursor enlarged with a red crosshair."],
+  ["img/13-calib-first-point.webp", "Click to place corner 1", "The point turns into a numbered cross and the list on the right ticks it off. The next corner is selected automatically."],
+  ["img/14-calib-all-points.webp", "Place corners 2, 3 and 4", "Front right, back right, back left. The dashed outline shows the belt; it must not cross itself. Drag any point to adjust it."],
+  ["img/15b-calib-page-result.webp", "Click “Solve & save”", "The result shows the error at each corner, the camera height and the focal length. Below 1 px is good."],
+  ["img/16-calib-overlay.webp", "Check the overlay", "“Show overlay” projects a 10 cm grid onto the belt and 1 m posts at its corners. The grid must lie flat on the belt. Then click “Done”."],
+];
+(function () {
+  const root = document.getElementById("walk-calib");
+  const img = root.querySelector(".walk-stage img"), num = root.querySelector(".walk-num"), text = root.querySelector(".walk-text"), dots = root.querySelector(".walk-dots");
+  let i = 0;
+  CALIB_STEPS.forEach((_, k) => { const b = document.createElement("button"); b.setAttribute("aria-label", `Step ${k + 1}`); b.onclick = () => show(k); dots.appendChild(b); });
+  CALIB_STEPS.forEach(([src]) => { const p = new Image(); p.src = src; });
+  function show(k) {
+    i = (k + CALIB_STEPS.length) % CALIB_STEPS.length;
+    const [src, title, body] = CALIB_STEPS[i];
+    img.src = src; img.alt = title;
+    num.textContent = `${i + 1} / ${CALIB_STEPS.length}`;
+    text.replaceChildren(Object.assign(document.createElement("b"), { textContent: title }), document.createTextNode(body));
+    [...dots.children].forEach((d, j) => d.classList.toggle("on", j === i));
+  }
+  root.querySelectorAll("[data-d]").forEach((b) => (b.onclick = () => show(i + Number(b.dataset.d))));
+  root.tabIndex = 0;
+  root.addEventListener("keydown", (e) => { if (e.key === "ArrowRight") show(i + 1); if (e.key === "ArrowLeft") show(i - 1); });
+  show(0);
+})();
+
+// ---- lightbox
+(function () {
+  const lb = document.getElementById("lightbox"), big = lb.querySelector("img");
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    if (t.tagName === "IMG" && (t.closest("figure.shot") || t.closest(".walk-stage"))) { big.src = t.currentSrc || t.src; big.alt = t.alt; lb.classList.add("on"); }
+    else if (lb.contains(t)) lb.classList.remove("on");
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") lb.classList.remove("on"); });
+})();
+
+// ---- table of contents highlight + theme toggle
+(function () {
+  const links = [...document.querySelectorAll(".toc a[href^='#']")].filter((a) => a.getAttribute("href").length > 1);
+  const map = new Map(links.map((a) => [a.getAttribute("href").slice(1), a]));
+  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { links.forEach((l) => l.classList.remove("on")); map.get(e.target.id)?.classList.add("on"); } }), { rootMargin: "0px 0px -75% 0px" });
+  map.forEach((_, id) => { const s = document.getElementById(id); if (s) io.observe(s); });
+  const btn = document.getElementById("theme");
+  const cur = () => document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  const paint = () => (btn.textContent = cur() === "dark" ? "Light mode" : "Dark mode");
+  btn.onclick = () => { const t = cur() === "dark" ? "light" : "dark"; document.documentElement.dataset.theme = t; try { localStorage.setItem("humotech-theme", t); } catch (e) {} paint(); };
+  paint();
+  if (location.protocol === "file:") document.getElementById("openapp").href = "http://localhost:8000/";
+})();
+</script>
+</body>
+</html>

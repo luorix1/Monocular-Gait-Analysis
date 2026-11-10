@@ -1,4 +1,4 @@
-"""Web app: a browser UI over the HumoTech workflow (`humotech app`).
+"""Web app: a browser UI over the Humotech Gait Analysis workflow (`humotech app`).
 
 Everything lives in one data folder (default ``data/``)::
 

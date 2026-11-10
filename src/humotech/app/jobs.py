@@ -54,7 +54,7 @@ class Job:
 
 
 class JobManager:
-    def __init__(self, root: Path, max_history: int = 300):
+    def __init__(self, root: Path, max_history: int = 300, start: bool = True):
         self.dir = Path(root) / ".jobs"
         self.dir.mkdir(parents=True, exist_ok=True)
         self.jobs: dict[str, Job] = {}
@@ -64,7 +64,8 @@ class JobManager:
         self.proc: subprocess.Popen | None = None
         self.max_history = max_history
         self._load()
-        threading.Thread(target=self._worker, daemon=True, name="humotech-jobs").start()
+        if start:   # start=False: jobs only queue (tests)
+            threading.Thread(target=self._worker, daemon=True, name="humotech-jobs").start()
 
     # ---------------------------------------------------------------- records
     def _load(self):
@@ -80,6 +81,7 @@ class JobManager:
             self.jobs[j.id] = j
 
     def _save(self, j: Job):
+        self.dir.mkdir(parents=True, exist_ok=True)   # survives someone deleting .jobs/ while running
         tmp = self.dir / f".{j.id}.json.tmp"
         tmp.write_text(json.dumps(asdict(j), indent=1))
         tmp.replace(self.dir / f"{j.id}.json")
@@ -115,9 +117,11 @@ class JobManager:
         except OSError:
             return []
 
-    def latest_for(self, **meta) -> Job | None:
+    def latest_for(self, kind: str | None = None, **meta) -> Job | None:
+        """Newest job of this kind whose meta matches (e.g. subject=..., trial=...)."""
         with self.lock:
-            hits = [j for j in self.jobs.values() if all(j.meta.get(k) == v for k, v in meta.items())]
+            hits = [j for j in self.jobs.values() if (kind is None or j.kind == kind)
+                    and all(j.meta.get(k) == v for k, v in meta.items())]
         return max(hits, key=lambda j: j.created) if hits else None
 
     def active(self) -> list[Job]:

@@ -62,6 +62,7 @@ function steps(s, state, reload) {
   const intr = state.intrinsics.find((i) => i.id === m.intrinsics);
   const nT = s.trials.length, nP = s.trials.filter((t) => t.processed).length;
   const pending = s.trials.filter((t) => !t.processed && !(t.job && ACTIVE.includes(t.job.status)));
+  const nActive = s.trials.filter((t) => t.job && ACTIVE.includes(t.job.status)).length;
   const detailsOk = m.height_m && m.mass_kg;
   const step = (n, cls, top, title, detail, btn) => h("div", { class: `card step ${cls}` },
     h("div", { class: "step-top" }, h("span", { class: "step-icon" }, cls === "done" ? icon("check", 13) : cls === "warn" ? "!" : n), top),
@@ -70,7 +71,7 @@ function steps(s, state, reload) {
     icon("target", 14), cal ? "Recalibrate" : "Calibrate belt");
   const procBtn = h("button", { class: `btn sm${cal && detailsOk && pending.length ? " primary" : ""}`,
     disabled: !cal || !detailsOk || !pending.length, onclick: () => runDialog(s, pending.map((t) => t.id)) },
-  icon("play", 13), pending.length ? `Process ${pending.length} remaining` : "All processed");
+  icon("play", 13), pending.length ? `Process ${pending.length} remaining` : nActive ? `Processing ${nActive}…` : "All processed");
   return h("div", { class: "steps", style: { marginBottom: "22px" } },
     step(1, detailsOk ? "done" : "todo", "Step 1", "Subject details",
       detailsOk ? `${fmt.n(m.height_m, 2)} m · ${fmt.n(m.mass_kg, 1)} kg` : "Height and mass are needed",
@@ -110,8 +111,8 @@ function trialsCard(s, state, reload, ctx) {
     tbody.append(h("tr", { class: t.processed ? "click" : "", onclick: () => { if (t.processed) location.hash = href; } },
       h("td", { style: { width: "36px" } }, cb),
       h("td", {}, h("div", { class: "cell-main" }, t.id),
-        h("div", { class: "cell-sub" }, t.info?.error ? t.info.error
-          : `${fmt.dur(t.info?.duration_s)} · ${Math.round(t.info?.fps || 0)} fps · ${t.info?.width}×${t.info?.height} · ${fmt.bytes(t.size)}`)),
+        h("div", { class: "cell-sub nowrap", title: `${t.name} · ${fmt.bytes(t.size)}` }, t.info?.error ? t.info.error
+          : `${fmt.dur(t.info?.duration_s)} · ${Math.round(t.info?.fps || 0)} fps · ${t.info?.width}×${t.info?.height}`)),
       h("td", { "data-trial-status": t.id }, statusCell(t)),
       h("td", { class: "num" }, shown ? `${fmt.n(shown, 2)}` : h("span", { class: "muted" }, "–")),
       h("td", { class: "num" }, t.processed ? h("span", {}, fmt.n(t.belt_speed_m_s, 2),
@@ -119,9 +120,8 @@ function trialsCard(s, state, reload, ctx) {
       h("td", { class: "num" }, t.processed ? fmt.n(t.cadence, 1) : "–"),
       h("td", { class: "num" }, t.processed ? fmt.n(t.stride_length, 2) : "–"),
       h("td", { class: "num" }, t.processed ? fmt.n(t.stance_pct, 1) : "–"),
-      h("td", { class: "num" }, t.processed ? t.n_strides : "–"),
       h("td", { class: "num nowrap" }, t.processed
-        ? h("a", { class: "btn sm", href, onclick: (e) => e.stopPropagation() }, "Results", icon("chevron", 13))
+        ? h("a", { class: "btn sm icon", href, title: "Open results", "aria-label": `Open results for ${t.id}`, onclick: (e) => e.stopPropagation() }, icon("chevron", 14))
         : t.job && ACTIVE.includes(t.job.status)
           ? h("a", { class: "btn sm", href: `#/jobs/${t.job.id}`, onclick: (e) => e.stopPropagation() }, "Log")
           : h("button", { class: "btn sm", disabled: !can, onclick: (e) => { e.stopPropagation(); runDialog(s, [t.id]); } }, icon("play", 12), "Process"))));
@@ -134,7 +134,7 @@ function trialsCard(s, state, reload, ctx) {
         h("th", { class: "num", title: "Speed shown on the treadmill (from the file name or entered when processing)" }, "Treadmill m/s"),
         h("th", { class: "num", title: "Belt speed estimated from the stance foot (difference to the treadmill speed)" }, "Estimated m/s"),
         h("th", { class: "num" }, "Cadence"), h("th", { class: "num" }, "Stride m"), h("th", { class: "num" }, "Stance %"),
-        h("th", { class: "num" }, "Strides"), h("th", {}))),
+        h("th", {}))),
       tbody)),
     h("div", { class: "card-body" }, dropzone(s, reload)));
 }
