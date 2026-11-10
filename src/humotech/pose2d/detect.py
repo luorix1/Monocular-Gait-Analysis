@@ -60,7 +60,29 @@ def _rtmlib_model(mode: str, device: str):
         from rtmlib import BodyWithFeet
     except ImportError as e:  # pragma: no cover
         raise ImportError("pip install rtmlib onnxruntime  (or onnxruntime-gpu on Ubuntu)") from e
-    return BodyWithFeet(mode=mode, backend="onnxruntime", device=device, to_openpose=False)
+    cuda = str(device).startswith("cuda")
+    if cuda:
+        import onnxruntime as ort
+        # onnxruntime-gpu >= 1.21: load the CUDA/cuDNN libs installed as pip wheels
+        # (`pip install "onnxruntime-gpu[cuda,cudnn]"`); harmless if they come from the system instead.
+        if hasattr(ort, "preload_dlls"):
+            try:
+                ort.preload_dlls()
+            except Exception:  # noqa: BLE001
+                pass
+    model = BodyWithFeet(mode=mode, backend="onnxruntime", device=device, to_openpose=False)
+    if cuda:
+        # onnxruntime silently falls back to CPU when the CUDA provider can't load -> fail loudly instead.
+        for part in ("det_model", "pose_model"):
+            sess = getattr(getattr(model, part, None), "session", None)
+            if sess is not None and "CUDAExecutionProvider" not in sess.get_providers():
+                raise RuntimeError(
+                    "device=cuda requested but onnxruntime fell back to CPU (CUDA provider failed to load; "
+                    "see the onnxruntime error above). Usually the CUDA/cuDNN major version doesn't match "
+                    "the onnxruntime-gpu build, or the build needs a newer driver than `nvidia-smi` shows. "
+                    "Driver < 580 (CUDA 12): pip install \"onnxruntime-gpu[cuda,cudnn]==1.22.*\"; otherwise "
+                    "pip install \"onnxruntime-gpu[cuda,cudnn]\" (in the humotech env), or run with --device cpu.")
+    return model
 
 
 def _yolo_model(weights: str, device: str):

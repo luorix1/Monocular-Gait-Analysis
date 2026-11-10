@@ -12,9 +12,14 @@ else
 fi
 conda run -n humotech python -m pip install torch --index-url "https://download.pytorch.org/whl/${CUDA_TAG}"
 conda run -n humotech python -m pip install -e ".[pose,refine,dev]"
-# GPU ONNX Runtime for rtmlib (replace the CPU build)
-conda run -n humotech python -m pip uninstall -y onnxruntime || true
-conda run -n humotech python -m pip install onnxruntime-gpu
+# GPU ONNX Runtime for rtmlib (replace the CPU build). The [cuda,cudnn] extras pull the CUDA/cuDNN
+# runtime libs that match this onnxruntime-gpu build as pip wheels, so no system CUDA toolkit is needed
+# (the plain package expects e.g. libcublasLt.so.13 on the system and silently falls back to CPU).
+# Its CUDA major version must match PyTorch's and be supported by the driver: newer onnxruntime-gpu
+# releases are CUDA 13 builds (driver >= 580); 1.22 is the CUDA 12 / cuDNN 9 build (driver >= 525).
+if [[ "$CUDA_TAG" == cu12* ]]; then ORT_SPEC="onnxruntime-gpu[cuda,cudnn]==1.22.*"; else ORT_SPEC="onnxruntime-gpu[cuda,cudnn]"; fi
+conda run -n humotech python -m pip uninstall -y onnxruntime onnxruntime-gpu || true
+conda run -n humotech python -m pip install "$ORT_SPEC"
 conda run -n humotech python -m pip install ultralytics smplx || true
 conda run -n humotech humotech check
 conda run -n humotech python -m pytest
