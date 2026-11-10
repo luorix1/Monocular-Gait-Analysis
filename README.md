@@ -1,4 +1,4 @@
-# HumoTech — single-camera treadmill gait analysis
+# HumoTech: single-camera treadmill gait analysis
 
 One video of a person walking on a treadmill → OpenSim-constrained joint kinematics →
 gait events → spatiotemporal parameters (stride frequency, stride/step length, stance %, …),
@@ -13,85 +13,235 @@ video ─► 2D pose (RTMPose Halpe-26: body + heels/toes)
       ─► gait events (Zeni / velocity) ─► spatiotemporal parameters + belt speed
 ```
 
-## Quick start
+Background on each stage: [docs/method.md](docs/method.md). Recording protocol and what to
+measure: [docs/calibration.md](docs/calibration.md).
+
+---
+
+## 1. Installation
+
+Requires [miniforge](https://github.com/conda-forge/miniforge) (conda). OpenSim's Python bindings
+only install cleanly through conda, so pip-only environments are not supported.
 
 ```bash
-# macOS (Apple Silicon) — miniforge installed
-bash scripts/setup_mac.sh            # conda env "humotech" (OpenSim 4.6, PyTorch, rtmlib) + tests
+# macOS (Apple Silicon)
+bash scripts/setup_mac.sh            # conda env "humotech" (OpenSim 4.6, PyTorch, rtmlib) + runs the tests
 # Ubuntu + NVIDIA
 bash scripts/setup_ubuntu.sh cu124   # same, with CUDA PyTorch + onnxruntime-gpu
 
 conda activate humotech
-humotech check                       # which optional pieces are available
-humotech synth --run                 # synthetic treadmill session through the full pipeline
+humotech check                       # lists which optional pieces are importable
 ```
 
-Real data:
+Or install by hand into an existing conda env:
 
 ```bash
-# 1. (once per camera/zoom) lens intrinsics from a checkerboard video — recommended
-humotech intrinsics checker.mp4 --board 9x6 --square 0.025 --out data/intrinsics.json
-# 2. click the 4 belt corners (+ optional extra landmarks) on a frame
+conda env create -f environment.yml          # or: conda install -c opensim-org opensim
+pip install -e ".[pose,refine,dev]"          # extras: pose | yolo | refine | gpu3d | dev
+```
+
+| Extra | Provides | Needed for |
+|---|---|---|
+| `pose` | rtmlib + onnxruntime | 2D pose (RTMPose Halpe-26, recommended) |
+| `yolo` | ultralytics | YOLO-pose fallback (no foot keypoints, so results are degraded) |
+| `refine` | torch | treadmill-constrained 3D refinement |
+| `gpu3d` | torch + smplx | GVHMR / WHAM lifters (Ubuntu + NVIDIA, see `scripts/install_gvhmr.sh`) |
+| `dev` | pytest, ruff | tests, linting |
+
+Optional: `bash scripts/fetch_opensim_geometry.sh` downloads the bone meshes so the model renders
+in the OpenSim GUI (not needed for the analysis).
+
+## 2. Sanity check on synthetic data
+
+```bash
+humotech synth --run                 # writes data/synthetic/ and runs the full pipeline on it
+```
+
+This generates a treadmill walker with exact ground truth (1.2 m/s belt, 1.1 s stride) and prints
+the recovered parameters next to the truth. A committed reference run is in
+[data/synthetic/results/](data/synthetic/results/). For example:
+
+| | ground truth | recovered |
+|---|---|---|
+| belt speed (m/s) | 1.20 | 1.202 |
+| stride time (s) | 1.10 | 1.100 |
+| stride length (m) | 1.32 | 1.318 |
+| step length (m) | 0.66 | 0.659 |
+| step width (m) | 0.13 | 0.123 |
+
+The synthetic walker is kinematically simple, so this checks the *pipeline* (geometry,
+bookkeeping, optimisation), not real-world accuracy.
+
+## 3. Processing a real session
+
+Session data lives in `data/<subject>/` (see [data/README.md](data/README.md)). Videos are
+git-ignored; calibration JSONs and results can be committed.
+
+### 3.1 Lens intrinsics (once per camera + zoom setting)
+
+Record a short video of a printed checkerboard held at many positions and angles (fill the corners
+of the frame too, and tilt the board ±30–45°), **with the same camera, resolution, zoom and focus as
+the trials**. Then:
+
+```bash
+humotech intrinsics data/S01/intrinsic.mov --board 7x4 --square 0.04 --step 20 \
+        --out data/intrinsics.json
+```
+
+That is the exact command used for the current [data/intrinsics.json](data/intrinsics.json).
+
+| Option | Meaning |
+|---|---|
+| `--board CxR` | **inner** corners (columns × rows), not squares. A board with 8 × 5 squares is `7x4`. |
+| `--square` | edge length of one square in metres (measure the print, don't trust the PDF) |
+| `--step N` | use every N-th frame. Larger is faster and gives less-correlated views. At least 8 frames must detect the board. |
+| `--out` | output JSON: `K` (3×3), `dist` (k1 k2 p1 p2 k3), `image_size` (width, height), `rms_px` |
+
+Check `rms_px` in the output: below ~0.5 px is good, above ~1 px usually means blur, a wrong
+`--board`/`--square`, or too few distinct views. The current file is from a portrait 1080×1920 video:
+fx ≈ fy ≈ 1760 px, RMS 0.35 px.
+
+If you change camera, resolution, orientation or zoom, redo this step. The intrinsics `image_size`
+must match the trial videos.
+
+### 3.2 Extrinsics: click the belt (once per camera placement)
+
+```bash
 humotech calibrate data/S01/trial.mp4 --belt-length 1.60 --belt-width 0.50 \
         --intrinsics data/intrinsics.json --out data/S01/calibration.json
-# 3. everything else
+        # optional: --extra data/S01/extra_landmarks.yaml  --frame 120
+```
+
+Click the four belt corners in the order shown on screen (`belt_front_left, belt_front_right,
+belt_back_right, belt_back_left`; *front* = the end the subject faces, left/right = the
+**subject's**). `u` undoes, `s` skips an optional extra landmark, Enter accepts. The command prints
+per-landmark reprojection errors and writes `calibration.png` next to the JSON: the 10 cm grid
+must sit on the belt and the green posts are 1 m tall. Errors above 2–3 px usually mean a
+mis-click or wrong belt dimensions. Details and the `--extra` YAML format:
+[docs/calibration.md](docs/calibration.md#clicking-humotech-calibrate).
+
+### 3.3 Run the pipeline
+
+```bash
 humotech run --video data/S01/trial.mp4 --calib data/S01/calibration.json \
         --height 1.78 --mass 72 --out data/S01/results
 ```
 
-Outputs (`results/`): `summary.json` (means/SD/L-R/symmetry), `strides.csv` (per stride),
-`events.json`, `opensim/scaled.osim` + `opensim/ik.mot` (joint angles, open in the OpenSim GUI),
-`kp3d_refined.npz`, `plots/events.png`, `plots/joint_angles.png`, `analysis_2d.json`
-(2D-only sanity check incl. an independent belt-speed estimate).
+| Option | Meaning |
+|---|---|
+| `--video` / `--kp2d` | input video, or an existing `kp2d_raw.npz` to skip 2D detection |
+| `--calib` | `calibration.json` from step 3.2 (required) |
+| `--height`, `--mass` | subject height (m) and mass (kg); override the config |
+| `--config` | YAML overriding [configs/default.yaml](configs/default.yaml) |
+| `--device` | `cpu` / `cuda` / `mps`, used for pose and refinement |
+| `--force` | recompute everything instead of reusing cached intermediates in `--out` |
 
-## What to record / measure
+Intermediates are cached in the output folder, so re-running after a config change only redoes
+the affected stages. `humotech detect video.mp4 --out kp2d_raw.npz` runs only the 2D pose stage.
+
+### 3.4 Outputs (`results/`)
+
+| File | Content |
+|---|---|
+| `summary.json` | per-parameter mean / SD / L / R / CV % / symmetry index, belt speed, stride counts |
+| `strides.csv` | one row per stride |
+| `events.json` | heel-strike and toe-off times per foot |
+| `opensim/scaled.osim`, `opensim/ik.mot` | scaled model + joint angles (open in the OpenSim GUI) |
+| `kp3d_refined.npz`, `refine_info.json` | refined 3D keypoints in the treadmill frame + optimiser report |
+| `analysis_2d.json` | 2D-only sanity check, including an independent belt-speed estimate |
+| `plots/events.png`, `plots/joint_angles.png` | quick-look figures |
+| `config_used.yaml` | the exact configuration of this run |
+
+Coordinate frame (= OpenSim ground): origin at the belt centre, **+X forward**, **+Y up**
+(belt is Y = 0), **+Z subject's right**.
+
+## 4. Configuration
+
+All options are in [configs/default.yaml](configs/default.yaml); copy it per session and pass
+`--config`. The ones most often changed:
+
+| Key | Default | Notes |
+|---|---|---|
+| `pose2d.backend` / `mode` | `rtmlib` / `balanced` | `performance` is more accurate, slower |
+| `lift.backend` | `planar` | `gvhmr` / `wham` need their result file in `lift.result_path` (GPU) |
+| `refine.device` | `cpu` | `cuda` on Ubuntu |
+| `events.method` / `source` | `zeni` / `opensim` | `velocity`; `refined` or `2d` if OpenSim is unavailable |
+| `events.hs_offset_ms`, `to_offset_ms` | 0 | constant corrections learned against force plates |
+| `belt_speed.source` | `refined` | set `known` + `known_m_s` to use the treadmill's displayed speed |
+
+## 5. What to record / measure
 
 See **[docs/calibration.md](docs/calibration.md)**. Minimum: belt length & width (the 4 corners
 you click), subject height & mass. Strongly recommended, in order of value:
 
-1. **Checkerboard intrinsics** for the camera (focal length + lens distortion) — focal length from
-   only 4 coplanar points is the weakest link of the calibration.
+1. **Checkerboard intrinsics** for the camera (focal length + lens distortion). Focal length from
+   only 4 coplanar points is the weakest link of the calibration. (Done for S01, see 3.1.)
 2. **One or more off-belt landmarks with known 3D position** (e.g. handrail top at a measured
    height, or a box/pole of known size placed on the belt for one frame).
-3. **Force-plate events + the treadmill's displayed speed** for a few trials — the instrumented
+3. **Force-plate events + the treadmill's displayed speed** for a few trials. The instrumented
    treadmill is the ground truth to validate/tune event detection (`events.hs_offset_ms`, …) and
    the belt-speed estimate.
 4. A few seconds of **quiet standing** at the start of each trial (better scaling).
 
-## Layout
+Camera: static tripod, side-on, mounted above hip height and tilted down, ≥ 60 fps, short shutter,
+focus/zoom/exposure locked, stabilisation off.
+
+## 6. Repository layout
 
 ```
 src/humotech/
-  calibration/  camera model, belt-corner calibration (homography → focal, PnP), click tool
+  calibration/  camera model, belt-corner calibration (homography → focal, PnP), checkerboard, click tool
   pose2d/       rtmlib / YOLO backends, single-subject tracking, L/R swap fix, filtering
   lift3d/       planar init (CPU), GVHMR/WHAM SMPL adapters, treadmill-constrained refinement
   biomech/      OpenSim scaling, TRC export, IK, forward kinematics of model markers
   gait/         events (Zeni, velocity), belt speed, spatiotemporal parameters
   synth/        synthetic treadmill walker with exact ground truth (tests, demos)
-  pipeline.py   end-to-end orchestration with cached intermediates;  cli.py  `humotech …`
-opensim_models/ Pose2Sim model + Halpe-26 marker set + IK setup (BSD-3, see LICENSE_Pose2Sim)
-configs/        default.yaml — all pipeline options
+  io/           video frame iteration, keypoint containers
+  pipeline.py   end-to-end orchestration with cached intermediates
+  cli.py        `humotech …` commands: check, synth, intrinsics, calibrate, detect, run
+opensim_models/ Pose2Sim model + Halpe-26 marker set + IK/scaling setups (BSD-3, see LICENSE_Pose2Sim)
+configs/        default.yaml: all pipeline options
+data/           intrinsics.json, per-subject sessions, synthetic reference run
 docs/           calibration.md, method.md, ubuntu_handoff.md
+scripts/        setup_mac.sh, setup_ubuntu.sh, install_gvhmr.sh, fetch_opensim_geometry.sh
 tests/          pytest suite (synthetic ground truth; torch/OpenSim tests auto-skip if missing)
 ```
 
-## Status (Nov 2026)
+## 7. Tests
+
+```bash
+pytest                    # ≈30 s; torch / OpenSim tests skip automatically if those aren't installed
+pytest -m "not opensim"   # markers: opensim, torch, slow
+```
+
+## 8. Status (Nov 2026)
 
 | Component | State |
 |---|---|
-| Calibration (belt corners, focal from homography, PnP, extra landmarks, checkerboard) | implemented, tested on synthetic |
+| Checkerboard intrinsics | implemented; **run on real data** (S01, RMS 0.35 px) |
+| Belt-corner calibration (focal from homography, PnP, extra landmarks) | implemented, tested on synthetic |
 | Click tool for landmarks (OpenCV window) | implemented, needs a manual try on a real frame |
-| 2D pose — rtmlib RTMPose Halpe-26 | implemented; model download not testable in the build sandbox → first real run on your machine |
-| 2D pose — YOLO-pose | implemented (no feet → degraded) |
+| 2D pose: rtmlib RTMPose Halpe-26 | implemented; first real run pending |
+| 2D pose: YOLO-pose | implemented (no feet, so degraded) |
 | Planar 3D init + treadmill-constrained refinement | implemented, tested (recovers 8 % scale + 12 cm offset errors, belt speed < 3 %) |
-| GVHMR / WHAM adapters | written against their public output formats — **verify on Ubuntu** |
+| GVHMR / WHAM adapters | written against their public output formats; **verify on Ubuntu** |
 | OpenSim scale + IK + FK | implemented, tested with OpenSim 4.6 (conda, Linux) |
-| Events, belt speed, spatiotemporal | implemented, tested |
-| GUI | not started — planned on Ubuntu (see docs/ubuntu_handoff.md) |
+| Events, belt speed, spatiotemporal | implemented, tested; synthetic reference run committed |
+| GUI | not started; planned on Ubuntu (see [docs/ubuntu_handoff.md](docs/ubuntu_handoff.md)) |
 
-Verified during setup: full suite (22 tests) with OpenSim 4.6 + PyTorch 2.x CPU on Linux x86_64
-(same conda env as `environment.yml`); core tests (no torch/OpenSim) in a Linux VM on the Mac.
-`scripts/setup_mac.sh` itself (native macOS conda) has not been run yet — do that first.
+Verified so far: full suite (22 tests) with OpenSim 4.6 + PyTorch 2.x CPU on Linux x86_64 (same
+conda env as `environment.yml`); core tests (no torch/OpenSim) in a Linux VM on the Mac;
+`humotech intrinsics` on a real checkerboard video. `scripts/setup_mac.sh` on native macOS has not
+been confirmed yet.
 
-Run the tests with `pytest` (≈30 s). The synthetic walker is kinematically simple, so tests
-check the *pipeline* (geometry, bookkeeping, optimisation), not real-world accuracy.
+## 9. Troubleshooting
+
+* **`Only N usable checkerboard views; need >= 8`**: check `--board` counts *inner* corners;
+  lower `--step`; make sure the whole board is visible and sharp in many frames.
+* **High calibration reprojection error**: corners clicked in the wrong order (left/right are the
+  subject's), wrong belt dimensions, or intrinsics from a different resolution/orientation/zoom.
+* **`humotech check` shows `opensim` missing**: OpenSim must come from conda
+  (`conda install -c opensim-org opensim`), not pip. Without it, set `opensim.enabled: false` and
+  `events.source: refined`.
+* **Left/right legs swapped in places**: `clean.fix_lr_swaps` is on by default; a more side-on
+  camera and contrasting shoes help.
